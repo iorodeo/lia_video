@@ -1,0 +1,111 @@
+body {
+    font: 100% verdana, arial, sans-serif;
+    background-color: #fff;
+    margin: 50px;
+}
+
+div.imagebox {
+    float: left;
+    padding: 10px;
+    width: 640px;
+    height: 530px;
+    border: 1px solid blue;
+}
+
+div.infobox {
+    float: left;
+    padding: 10px;
+    margin-left: 30px;
+    width: auto;
+    height: 530px;
+    border: none;
+}
+
+div.footer {
+    clear: both;
+    width: 100%;
+    height: 5px;
+    border: none;
+}
+
+h1.title {
+    color:#BB0000;
+}
+
+/* Setup table */
+table {
+    border-collapse: collapse;
+    border-style: none;
+}
+
+tr > td {
+    padding-bottom: 1em;
+}
+
+td {
+    padding-right: 2em;
+}
+
+td.c1 {
+    background-color: #FFFFFF;
+    color: black;
+}
+
+td.c2 {
+    background-color: #E6E6E6;
+    color: black;
+}
+/* End setup table */
+
+
+     
+
+/* begin css tabs                                                  */
+/* CSS Tabs is licensed under Creative Commons Attribution 3.0     */ 
+/* Joshua Kaufman, 28 January, 2007                                */
+
+ul#tabnav { /* general settings */
+    text-align: left; /* set to left, right or center */
+    margin: 1em 0 1em 0; /* set margins as desired */
+    font: bold 11px verdana, arial, sans-serif; /* set font as desired */
+    /*border-bottom: 2px solid #6c6;*/ /* set border COLOR as desired */
+    border-bottom: 1px solid blue; /* set border COLOR as desired */
+    list-style-type: none;
+    padding: 3px 10px 3px 10px; /* THIRD number must change with respect to padding-top (X) below */
+}
+
+ul#tabnav li { /* do not change */
+    display: inline;
+}
+
+body#tab1 li.tab1, body#tab2 li.tab2, body#tab3 li.tab3, body#tab4 li.tab4 { /* settings for selected tab */
+    border-bottom: 1px solid #fff; /* set border color to page background color */
+    background-color: #fff; /* set background color to match above border color */
+}
+
+body#tab1 li.tab1 a, body#tab2 li.tab2 a, body#tab3 li.tab3 a, body#tab4 li.tab4 a { /* settings for selected tab link */
+    background-color: #fff; /* set selected tab background color as desired */
+    color: #000; /* set selected tab link color as desired */
+    position: relative;
+    top: 1px;
+    padding-top: 4px; /* must change with respect to padding (X) above and below */
+}
+
+ul#tabnav li a { /* settings for all tab links */
+    padding: 3px 4px; /* set padding (tab size) as desired; FIRST number must change with respect to padding-top (X) above */
+    /*border: 1px solid #6c6; */ /* set border COLOR as desired; usually matches border color specified in #tabnav */
+    border: 1px solid blue; /* set border COLOR as desired; usually matches border color specified in #tabnav */
+    background-color: #DDDDFF; /* set unselected tab background color as desired */
+    color: #666; /* set unselected tab link color as desired */
+    /*color: #666; */ /* set unselected tab link color as desired */
+    color: #444; /* set unselected tab link color as desired */
+    margin-right: 0px; /* set additional spacing between tabs as desired */
+    text-decoration: none;
+    border-bottom: none;
+}
+
+ul#tabnav a:hover { /* settings for hover effect */
+    background: #fff; /* set desired hover color */
+}
+
+/* end css tabs */

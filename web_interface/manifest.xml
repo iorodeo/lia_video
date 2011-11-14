@@ -1,0 +1,15 @@
+<package>
+  <description brief="web_interface">
+
+     web_interface
+
+  </description>
+  <author>Will Dickson</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/web_interface</url>
+  <depend package="rospy"/>
+
+</package>
+
+
