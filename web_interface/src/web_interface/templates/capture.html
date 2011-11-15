@@ -51,5 +51,8 @@
             <button type="submit" name="recording_button" id="recording_button">{{recording_button_text}} </button>
         </form>
     </div>
+    {% if proxy_error_msg %}
+    <a class="warning"> {{proxy_error_msg}}</a>
+    {% endif %}
 </div>
 {% endblock %}

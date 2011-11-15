@@ -21,6 +21,9 @@ import roslib
 roslib.load_manifest('web_interface')
 import rospy
 
+# ROS Services
+from lia_services.srv import RecordingCmd
+
 # Set up application and database
 app = flask.Flask(__name__)
 db = redis.Redis('localhost', db=10)
@@ -73,6 +76,8 @@ def capture():
 
     # Get recording flag from database
     recording_flag = db.get('recording_flag')
+    proxy_error_msg = ''
+            
 
     # Define sijax request handler
     def update_recording_button(obj_response):
@@ -90,15 +95,24 @@ def capture():
 
         # If this is post toggle state of recording flag
         if flask.request.method == 'POST':
+
             if recording_flag == 0:
                 # Start recording
                 recording_flag = 1
+                recording_cmd = 'start'
             else:
                 # Stop recording
                 recording_flag = 0
-            method = 'post'
+                recording_cmd = 'stop'
+
+            # Use Ros service to send command to avi writer 
+            try:
+                recording_cmd_proxy = rospy.ServiceProxy('recording_cmd',RecordingCmd)
+                response = recording_cmd_proxy(recording_cmd,'dummy_file.avi')
+            except rospy.ServiceException, e:
+                proxy_error_msg = str(e)
         else:
-            method = 'normal'
+            pass
         db.set('recording_flag',recording_flag)
 
         # Set the recording button text based on whether or not we
@@ -111,6 +125,7 @@ def capture():
         setup_values = db_tools.get_dict(db,'setup_values')
         kwargs['setup_display'] = display_tools.get_setup_display(setup_values)
         kwargs['recording_button_text'] = recording_button_text
+        kwargs['proxy_error_msg'] = proxy_error_msg
         return flask.render_template('capture.html',**kwargs)
 
 @app.route('/setup',methods=['GET','POST'])

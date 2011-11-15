@@ -1,15 +1,14 @@
 <package>
-  <description brief="web_interface">
+  <description brief="lia_services">
 
-     web_interface
+     lia_services
 
   </description>
   <author>Will Dickson</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/web_interface</url>
+  <url>http://ros.org/wiki/lia_services</url>
   <depend package="rospy"/>
-  <depend package="lia_services" />
 
 </package>
 

@@ -1,4 +1,20 @@
-import cv
+import roslib
+roslib.load_manifest('avi_writer')
+import rospy
+from lia_services.srv import RecordingCmd
 
-w = cv.CreateVideoWriter('mytest.avi', cv.CV_FOURCC('M','J','P','G'), 5.0, (100,100))
-print cv.__file__
+def test_recording_cmd(cmd):
+    #rospy.wait_for_service('recording_cmd')
+    recording_cmd_proxy = rospy.ServiceProxy('recording_cmd',RecordingCmd)
+    try:
+        response = recording_cmd_proxy(cmd,'dummy_file.avi')
+        print response
+    except rospy.ServiceException, e:
+        print 'Service call failed: %s'%(e,)
+
+# ----------------------------------------------------------------------------
+if __name__ == '__main__':
+    import sys
+    cmd = sys.argv[1]
+    test_recording_cmd(cmd)
+    

@@ -1,0 +1,5 @@
+string command 
+string filename
+---
+bool flag
+

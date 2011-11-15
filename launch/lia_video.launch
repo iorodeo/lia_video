@@ -12,6 +12,7 @@
   <!-- Progress message node -->
 
   <!-- Image throttling nodes - for previewing -->
+  <!-- Add throttling nodes for progress bar and progress messages -->
   <node pkg="topic_tools" type="throttle" name="camera_throttler" args="messages /camera/image_raw 10.0 /camera/image_throttle" />
 
   <!-- MJPEG server for camera images -->
