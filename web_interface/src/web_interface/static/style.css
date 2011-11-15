@@ -8,7 +8,7 @@ div.imagebox {
     float: left;
     padding: 10px;
     width: 640px;
-    height: 530px;
+    height: 560px;
     border: 1px solid blue;
 }
 
@@ -28,8 +28,8 @@ div.footer {
     border: none;
 }
 
-h1.title {
-    color:#BB0000;
+h1.header {
+    color:#006600;
 }
 
 /* Setup table */
@@ -57,6 +57,9 @@ td.c2 {
 }
 /* End setup table */
 
+.warning {
+    color: #EE0000;
+}
 
      
 
@@ -78,12 +81,12 @@ ul#tabnav li { /* do not change */
     display: inline;
 }
 
-body#tab1 li.tab1, body#tab2 li.tab2, body#tab3 li.tab3, body#tab4 li.tab4 { /* settings for selected tab */
+body#tab1 li.tab1, body#tab2 li.tab2, body#tab3 li.tab3, body#tab4 li.tab4  body#tab5 li.tab5{ /* settings for selected tab */
     border-bottom: 1px solid #fff; /* set border color to page background color */
     background-color: #fff; /* set background color to match above border color */
 }
 
-body#tab1 li.tab1 a, body#tab2 li.tab2 a, body#tab3 li.tab3 a, body#tab4 li.tab4 a { /* settings for selected tab link */
+body#tab1 li.tab1 a, body#tab2 li.tab2 a, body#tab3 li.tab3 a, body#tab4 li.tab4 a, body#tab5 li.tab5 a { /* settings for selected tab link */
     background-color: #fff; /* set selected tab background color as desired */
     color: #000; /* set selected tab link color as desired */
     position: relative;

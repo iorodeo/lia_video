@@ -3,16 +3,20 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
+        {% block head %}
+
         <title>LIA Video</title>
         <link rel= "stylesheet" type="text/css" href="static/style.css"> </link>
         <script type="text/javascript" src="static/numbersonly.js"></script>
+
+        {% endblock %}
     </head>
 
     <body id="{{current_tab}}">
 
         {% block body %}
 
-        <h1 class="title">LIA - Video Acquisition System</h1> 
+        <h1 class="header">{{page_header}}</h1> 
 
         <ul id="tabnav">
             {% for k in tab_order %}

@@ -1,0 +1,5 @@
+video_mode: format7_mode0
+frame_rate: 24.0
+iso_speed:  400
+frame_id:   camera1
+

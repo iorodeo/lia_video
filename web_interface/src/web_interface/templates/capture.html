@@ -1,20 +1,55 @@
 {% extends "layout.html" %}
+{% block head %}
+{{ super() }}
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script type="text/javascript" src="/static/js/sijax/sijax.js"></script>
+<script type="text/javascript">
+    {{ g.sijax.get_js()|safe }}
+</script>
+
+<script type="text/javascript">
+    setTimeout(function() {
+        Sijax.request('update_recording_button');
+        setTimeout(arguments.callee,500);
+    }, 500);
+</script>
+
+
+{% endblock %}
+
 {% block body%}
 {{ super() }}
 
 <div class="imagebox">
     <div>
-        <img src="http://localhost:8080/stream?topic={{camera}}" />
+        <img src="http://{{hostname}}:{{camera_mjpeg_port}}/stream?topic={{camera_topic}}?width={{capture_tab_image['width']}}?height={{capture_tab_image['height']}}" />
     </div>
 
     <div>
-        <img src="http://localhost:8080/stream?topic={{progress_bar}}" />
+        <img src="http://{{hostname}}:{{progress_mjpeg_port}}/stream?topic={{progress_bar_topic}}" />
     </div>
 
     <div>
-        <img src="http://localhost:8080/stream?topic={{progress_message}}" />
+        <img src="http://{{hostname}}:{{progress_mjpeg_port}}/stream?topic={{progress_message_topic}}" />
     </div>
 </div>
 <div class="infobox">
+    <h2 style="text-align:center;"> <strong> Settings </strong> </h2>
+    <br/>
+    <table>
+    {% for item in setup_display %}
+        <tr>
+            <td class="{{item['class']}}"> {{item['name']}} </td>  
+            <td class="{{item['class']}}"> {{item['value']}} </td>
+        </tr>
+    {% endfor %}
+    </table>
+    <br/>
+    <br/>
+    <div style="text-align:left;">
+        <form method="post" name="recording_form">
+            <button type="submit" name="recording_button" id="recording_button">{{recording_button_text}} </button>
+        </form>
+    </div>
 </div>
 {% endblock %}

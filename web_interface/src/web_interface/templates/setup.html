@@ -2,23 +2,28 @@
 {% block body %}
 {{ super() }}
 
+{% if disabled %}
+<br/>
+<p class="warning" > <strong> Recording in progress - settings cannot be changed </strong> </p>
+{% endif %}
+
 <form>
     <br/>
     <form>
         <table>
             <tr>
                 <td class="c1"> Movie File: </td> 
-                <td class="c1"> <input type="text" size="65" value={{movie_file}}> (.avi) </td>
+                <td class="c1"> <input {{disabled}} type="text" size="65" value={{movie_file}}> (.avi) </td>
                 <td class="c1"> extension added automatically </td>
                 <td class="c1"> 
-                    overwrite <input type="checkbox" checked={{overwrite}}></input>
+                    overwrite <input {{disabled}} type="checkbox" checked={{overwrite}}></input>
                 </td>
             </tr>
             <tr>
                 <td class="c2"> Recording Duration: </td> 
                 <td class="c2">  
-                    <input type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{recording_duration[0]}}> (min) &nbsp; 
-                    <input type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{recording_duration[1]}}> (sec) 
+                    <input {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{recording_duration[0]}}> (min) &nbsp; 
+                    <input {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{recording_duration[1]}}> (sec) 
                 </td>
                 <td class="c2"> </td>
                 <td class="c2"> </td>
@@ -26,7 +31,7 @@
             <tr>
                 <td class="c1"> Number of Pulses: </td>
                 <td class="c1">
-                    <input type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{number_pulses}}>  
+                    <input {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{number_pulses}}>  
                 </td>
                 <td class="c1">
                 </td>
@@ -34,8 +39,8 @@
             <tr>   
                 <td class="c2"> Pulse Start Time: </td> 
                 <td class="c2"> 
-                    <input type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_start_time[0]}}> (min) &nbsp;
-                    <input type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_start_time[1]}}> (sec) 
+                    <input {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_start_time[0]}}> (min) &nbsp;
+                    <input {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_start_time[1]}}> (sec) 
                 </td>
                 <td class="c2"> </td> 
                 <td class="c2"> </td>
@@ -43,14 +48,14 @@
             <tr> 
                 <td class="c1"> Pulse Period: </td> 
                 <td class="c1"> 
-                    <input type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_period}}> (sec) 
+                    <input {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_period}}> (sec) 
                 </td>
                 <td class="c1"> </td>
             </tr>
             <tr>
                 <td class="c2"> Pulse Duty Cycle: </td>
                 <td class="c2"> 
-                    <input type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_duty_cycle}}> (%) 
+                    <input {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_duty_cycle}}> (%) 
                 </td>
                 <td class="c2"> </td>
                 <td class="c2"> </td>
@@ -58,13 +63,13 @@
             <tr>
                 <td class="c1"> Pulse Power: </td>
                 <td class="c1"> 
-                    <input type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_power}}> (%) 
+                    <input {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_power}}> (%) 
                 </td>
                 <td class="c1"> </td>
                 <td class="c1"> </td>
             </tr>
         </table>
         <br/>
-        <input type="submit" value="Submit">  
+        <input {{disabled}} type="submit" value="Submit">  
     </form>
 {% endblock %}

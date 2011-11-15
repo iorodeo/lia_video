@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block body%}
+{{ super() }}
+<div>
+<form action="{{url_for('fullsize_view')}}" method="post" name="scale_form">
+    Image Scale: {{current_scale}}, 
+    &nbsp; &nbsp;
+    Change to
+    <select name="scale">
+        {% for value in scale_options %}
+            {% if value == current_scale %}}
+                <option selected="selected" value="{{value}}"> {{value}}</option>
+            {% else %}
+                <option value="{{value}}"> {{value}}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <button type="submit"/> Submit </button> 
+</form>
+<div>
+
+ <div style="float:left;margin-right:15px;margin-top:0px;">
+     <div>
+        <img src="http://{{hostname}}:{{camera_mjpeg_port}}/stream?topic={{camera_topic}}?width={{image_width}}?height={{image_height}}"/> 
+    </div>
+ </div>
+ 
+{% endblock %}

@@ -1,0 +1,27 @@
+<launch>
+
+  <!-- Camera node -->
+  <node pkg="camera1394" type="camera1394_node" name="camera1394_node" >
+    <rosparam file="camera_config.yaml"/>
+  </node>
+
+  <!-- AVI writer node -->
+
+  <!-- Progress bar node -->
+
+  <!-- Progress message node -->
+
+  <!-- Image throttling nodes - for previewing -->
+  <node pkg="topic_tools" type="throttle" name="camera_throttler" args="messages /camera/image_raw 10.0 /camera/image_throttle" />
+
+  <!-- MJPEG server for camera images -->
+  <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server_8080" >
+    <param name="port" value="8080"/>
+  </node>
+
+  <!-- MJPEG server for camera images -->
+  <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server_8181" >
+    <param name="port" value="8181"/>
+  </node>
+
+</launch>
