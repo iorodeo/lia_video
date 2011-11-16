@@ -22,6 +22,33 @@
     {% endfor %}
 </table>
 
+<br/>
+<strong> MJPEG Streams </strong>
+<table>
+    <tr>
+        <td class="c2">
+            <a href="http://{{hostaddr}}:{{camera_mjpeg_port}}/stream?topic={{camera_topic}}"> 
+                http://{{hostaddr}}:{{camera_mjpeg_port}}/stream?topic={{camera_topic}}
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td class="c1">
+            <a href="http://{{hostaddr}}:{{progress_mjpeg_port}}/stream?topic={{progress_bar_topic}}" > 
+                http://{{hostaddr}}:{{progress_mjpeg_port}}/stream?topic={{progress_bar_topic}}
+            </a>
+        </td>
+    </tr>
+    <tr>
+        <td class="c2">
+            <a href="http://{{hostaddr}}:{{progress_mjpeg_port}}/stream?topic={{progress_message_topic}}"> 
+                http://{{hostaddr}}:{{progress_mjpeg_port}}/stream?topic={{progress_message_topic}} 
+            </a>
+        </td>
+    </tr>
+</table>
+<br/>
+
 <br/> 
 <strong> ROS Topics </strong> 
 <br/>

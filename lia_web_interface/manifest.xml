@@ -1,7 +1,7 @@
 <package>
-  <description brief="web_interface">
+  <description brief="lia_web_interface">
 
-     web_interface
+     lia_web_interface
 
   </description>
   <author>Will Dickson</author>

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import roslib
-roslib.load_manifest('avi_writer')
+roslib.load_manifest('lia_avi_writer')
 import rospy
 import sys
 import os

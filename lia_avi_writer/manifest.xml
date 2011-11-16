@@ -1,13 +1,13 @@
 <package>
-  <description brief="avi_writer">
+  <description brief="lia_avi_writer">
 
-     avi_writer
+     lia_avi_writer
 
   </description>
   <author>Will Dickson</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/avi_writer</url>
+  <url>http://ros.org/wiki/lia_avi_writer</url>
   <depend package="rospy"/>
   <depend package="opencv2"/>
   <depend package="cv_bridge"/>

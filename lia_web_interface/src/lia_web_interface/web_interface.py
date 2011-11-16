@@ -24,7 +24,7 @@ import file_tools
 import config
 
 import roslib
-roslib.load_manifest('web_interface')
+roslib.load_manifest('lia_web_interface')
 import rospy
 
 # ROS Services
