@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+
 {% block head %}
 {{ super() }}
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
@@ -6,15 +7,12 @@
 <script type="text/javascript">
     {{ g.sijax.get_js()|safe }}
 </script>
-
 <script type="text/javascript">
     setTimeout(function() {
         Sijax.request('update_recording_button');
         setTimeout(arguments.callee,500);
     }, 500);
 </script>
-
-
 {% endblock %}
 
 {% block body%}
@@ -22,15 +20,15 @@
 
 <div class="imagebox">
     <div>
-        <img src="http://{{hostname}}:{{camera_mjpeg_port}}/stream?topic={{camera_topic}}?width={{capture_tab_image['width']}}?height={{capture_tab_image['height']}}" />
+        <img src="http://{{hostaddr}}:{{camera_mjpeg_port}}/stream?topic={{camera_topic}}?width={{capture_tab_image['width']}}?height={{capture_tab_image['height']}}" />
     </div>
 
     <div>
-        <img src="http://{{hostname}}:{{progress_mjpeg_port}}/stream?topic={{progress_bar_topic}}" />
+        <img src="http://{{hostaddr}}:{{progress_mjpeg_port}}/stream?topic={{progress_bar_topic}}" />
     </div>
 
     <div>
-        <img src="http://{{hostname}}:{{progress_mjpeg_port}}/stream?topic={{progress_message_topic}}" />
+        <img src="http://{{hostaddr}}:{{progress_mjpeg_port}}/stream?topic={{progress_message_topic}}" />
     </div>
 </div>
 <div class="infobox">

@@ -1,3 +1,7 @@
+"""
+A collection of service functions usefull for createing the web display.
+"""
+import config 
 
 def get_setup_display(setup_values): 
     """
@@ -51,3 +55,15 @@ def get_recording_button_text(recording_flag):
     else:
         recording_button_text = 'Stop Recording'
     return recording_button_text
+
+
+def get_colored_list(input_list, color_vals=('c1', 'c2')):
+    output_list = []
+    for i, data in enumerate(input_list):
+        color = color_vals[i%2]
+        if type(data) in (list,tuple):
+            colored_data = list(data) + [color]
+        else:
+            colored_data = (data, color)
+        output_list.append(colored_data)
+    return output_list

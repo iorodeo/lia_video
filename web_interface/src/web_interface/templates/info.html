@@ -1,4 +1,46 @@
 {% extends "layout.html" %}
 {% block body%}
 {{ super() }}
+
+<br/>
+<strong> Data Directory </strong>
+<br/>
+<table>
+    <tr>
+        <td class="c2"> {{data_directory}} </td>
+    </tr>
+</table>
+
+<br/>
+<strong> Computer </strong> 
+<br/>
+<table>
+    {% for name, value, color in computer_info %}
+        <tr>
+            <td class={{color}}> {{name}} </td> <td class={{color}}> {{value}} </td>
+        </tr>
+    {% endfor %}
+</table>
+
+<br/> 
+<strong> ROS Topics </strong> 
+<br/>
+<table>
+    {% for topic, color in ros_topics %}
+        <tr>
+            <td class={{color}}> {{topic}} </td>
+        </tr>
+    {% endfor %}
+</table>
+
+<br/> <br/>
+<strong> Database and Ports </strong>
+<table>
+    {% for name, value, color in db_port_info %}
+        <tr>
+            <td class={{color}}> {{name}} </td> <td class={{color}}> {{value}} </td>
+        </tr>
+    {% endfor %}
+</table>
+
 {% endblock %}

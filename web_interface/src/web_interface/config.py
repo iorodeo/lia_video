@@ -1,3 +1,9 @@
+"""
+Configuration information for lia video recording system
+"""
+import os
+
+# User interface -----------------------------------------------------
 page_header = 'LIA - Video Acquisition System'
 
 tab_dict = {
@@ -36,13 +42,17 @@ setup_defaults = {
         'pulse_power': 50,
         }
 
+# Interfaces and ports 
+iface = 'eth0'
 camera_mjpeg_port = 8080
 progress_mjpeg_port = 8181
 
+# ROS image topics 
 camera_topic = '/camera/image_throttle'
 progress_bar_topic = '/image_progress_bar'
 progress_message_topic = '/image_progress_message'
 
+# Image sizes for different views
 fullsize_tab_image = {
         'width': 1280,
         'height': 1024,
@@ -53,7 +63,16 @@ capture_tab_image = {
         'height': fullsize_tab_image['height']/2,
         }
 
-iface = 'eth0'
+# Fullsize tab scale options
+fullsize_scale_options = [str(0.1*x) for x in range(10,0,-1)]
+
+# Redis database#
+redis_db = 10
+
+# Data directory
+data_directory = os.path.join(os.environ['HOME'],'lia_data')
+
+
 
 
 

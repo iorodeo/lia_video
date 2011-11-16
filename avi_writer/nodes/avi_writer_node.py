@@ -3,6 +3,8 @@ import roslib
 roslib.load_manifest('avi_writer')
 import rospy
 import sys
+import os
+import os.path
 import cv
 import numpy
 import threading
@@ -25,7 +27,7 @@ class AVI_Writer(object):
 
     def __init__(self,topic):
         self.lock = threading.Lock()
-        self.filename = '/home/wbd/test.avi'
+        self.filename = os.path.join(os.environ['HOME'],'default.avi')
         self.topic = topic
         self.writer = None 
         self.frame_rate = 24.0 # This is a kludge - get from image topic
@@ -62,6 +64,9 @@ class AVI_Writer(object):
             if self.cv_image_size is None:
                 # If we don't have and image yet - we can't get started, return fail.
                 return RecordingCmdResponse(False)
+
+            self.filename = req.filename
+            self.record_t = req.duration
 
             command = req.command.lower()
             if command == 'start':
