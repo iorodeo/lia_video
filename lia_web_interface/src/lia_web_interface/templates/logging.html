@@ -1,0 +1,113 @@
+{% extends "settings.html" %}
+{% block head %}
+{{ super() }}
+
+{% endblock %}
+{% block body%}
+{{ super() }}
+
+<br/>
+<strong> Log Settings </strong> <br/>
+<br/>
+<form name="trial_settings_form" method="post">
+    <table>
+        <tr>
+            <td class="c2"> Data Directory </td> 
+            <td class="c2"> {{data_directory}} </td>
+            <td class="c2"> </td>
+        </tr>
+        <tr>
+            <td class="c1"> Movie File: </td> 
+            <td class="c1"> <input name="movie_file" {{disabled}} type="text" size="65" value={{movie_file}} /> (.avi) </td>
+            <td class="c1"> extension added automatically </td>
+        </tr>
+        <tr>
+            <td class="c2"> Overwrite </td>
+            
+            <td class="c2"> 
+                {% if overwrite == 'yes' %}
+                     <input name="overwrite" {{disabled}} type="checkbox" checked />
+                {% else %}
+                     <input name="overwrite" {{disabled}} type="checkbox"/> 
+                {% endif %}
+            </td>
+            <td class="c2"> </td>
+        </tr>
+        <tr>
+            <td class="c1"> Append Datetime </td>
+            <td class="c1"> 
+                {% if append_datetime == 'yes' %}
+                    <input name="append_datetime" {{disabled}} type="checkbox" checked /> 
+                {% else %}
+                    <input name="append_datetime" {{disabled}} type="checkbox" /> 
+                {% endif %}
+            </td>
+            <td class="c1"> </td>
+        </tr>
+        <tr>
+            <td class="c2">
+                Settings File Suffix
+            </td>
+            <td class="c2">
+                {{settings_file_suffix}}
+            </td>
+            <td class="c2"></td>
+        </tr>
+        <tr>
+            <td class="c1">
+                Timing File Suffix
+            </td>
+            <td class="c1">
+                {{timing_file_suffix}}
+            </td>
+            <td class="c1"></td>
+        </tr>
+    </table>
+    <br/>
+    <button {{disabled}} type="submit" name="set_values"> Update Values</button> 
+</form>
+
+{% if set_values_flag %}
+    <br/>
+    <br/>
+    <strong> Values Set To: </strong> 
+    <br/><br/>
+    <table>
+    {% for item in log_display %}
+        <tr>
+            <td class="{{item['class']}}"> {{item['name']}} </td>  
+            <td class="{{item['class']}}"> {{item['value']}} </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endif %}
+
+<br/><br/>
+<strong> Existing Movie Files: </strong> 
+<br/><br/>
+{% if avi_display %}
+    <form name=select_movies method="post">
+        <table>
+            <tr> 
+                <th> </th>
+                <th style="text-align:left"> Name </th> 
+                <th style="text-align:left"> Time (last modified) </th>
+                <th style="text-align:left"> Size (MB) </th>
+            </tr>
+            {% for name, size, mtime, color in avi_display %}
+            <tr>
+                <td class="{{color}}"> <input type="checkbox" name="{{name}}" >  </input> </td>
+                <td class="{{color}}"> {{name}} </td> 
+                <td class="{{color}}"> {{mtime}} </td>
+                <td class="{{color}}" style="text-align:right"> {{size}} </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br/>
+        <button type="submit" name="delete_selected_files"> Delect Selected </button>
+    </form>
+{% else %}
+    Data directory empty
+{% endif %}
+
+{% endblock %}

@@ -2,26 +2,28 @@
 Web interface for the LIA (Light Induced Arousal) Video Acquisition System.
 
 """
-## Tornado web server
-#from tornado.wsgi import WSGIContainer
-#from tornado.httpserver import HTTPServer
-#from tornado.ioloop import IOLoop
+# Tornado web server
+from tornado.wsgi import WSGIContainer
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
 
 # Flask web framework imports
-import sys
-import os
 import flask
 import flaskext.sijax
 
+import sys
+import os
 import redis
 import atexit
+import time
 
+import config
 import iface_tools
 import display_tools
 import db_tools
 import time_tools
 import file_tools
-import config
+import form_tools
 
 import roslib
 roslib.load_manifest('lia_web_interface')
@@ -34,11 +36,13 @@ from lia_services.srv import RecordingCmd
 app = flask.Flask(__name__)
 
 db = redis.Redis('localhost', db=config.redis_db)
-db_tools.set_dict(db,'setup_values',config.setup_defaults)
+db_tools.set_dict(db,'trial_values',config.trial_values_default)
+db_tools.set_dict(db,'log_values', config.log_values_default)
+db_tools.set_dict(db,'saved_trials',{})
 db.set('recording_flag', 0)
 
 # Check for data directory - create if needed
-file_tools.check_dir(config.data_directory)
+file_tools.check_dir(config.log_values_default['data_directory'])
 
 # The path where the sijax extension puts its javascript files
 app.config["SIJAX_STATIC_PATH"] = os.path.join('.', os.path.dirname(__file__), 'static/js/sijax/')
@@ -83,10 +87,12 @@ def capture():
     query for the recording state.
     """
 
-    # Get recording flag and setup values from database
+    # Get recording flag and trial values from database
     recording_flag = db.get('recording_flag')
-    setup_values = db_tools.get_dict(db,'setup_values')
+    trial_values = db_tools.get_dict(db,'trial_values')
+    log_values = db_tools.get_dict(db,'log_values')
     proxy_error_msg = ''
+    avi_exists_flag = False
 
     # Define sijax request handler
     def update_recording_button(obj_response):
@@ -94,6 +100,7 @@ def capture():
         obj_response.html("#recording_button",recording_button_text)
 
     if flask.g.sijax.is_sijax_request:
+
         # This is a sijax request - let sijax handle it
         flask.g.sijax.register_callback('update_recording_button', update_recording_button)
         return flask.g.sijax.process_request()
@@ -105,30 +112,46 @@ def capture():
         # If this is post toggle state of recording flag
         if flask.request.method == 'POST':
 
-            if recording_flag == 0:
-                # Start recording
-                recording_flag = 1
-                recording_cmd = 'start'
-            else:
-                # Stop recording
+            abort = False
+
+            # Get movie file name
+            movie_file = log_values['movie_file']
+            if log_values['append_datetime'] == 'yes': 
+                movie_file = file_tools.add_datetime_suffix(movie_file)
+
+            if recording_flag == 0:  # Start recording
+
+                is_existing_avi = file_tools.is_existing_avi(log_values['data_directory'],movie_file)
+                if log_values['overwrite'] == 'no' and is_existing_avi:
+                    abort = True
+                    avi_exists_flag = True
+                else:
+                    recording_flag = 1
+                    recording_cmd = 'start'
+
+            else: # Stop recording
+
                 recording_flag = 0
                 recording_cmd = 'stop'
 
-            # Use Ros service to send command to avi writer 
-            fullpath_filename = os.path.join(config.data_directory,setup_values['movie_file'])
-            t_min, t_sec = setup_values['recording_duration']
-            recording_duration = 60.0*t_min + 1.0*t_sec
-            try:
-                recording_cmd_proxy = rospy.ServiceProxy('recording_cmd',RecordingCmd)
-                response = recording_cmd_proxy( 
-                        recording_cmd,
-                        fullpath_filename,
-                        recording_duration,
-                        )
-            except rospy.ServiceException, e:
-                proxy_error_msg = str(e)
-        else:
-            pass
+            if not abort:
+
+                # Use Ros service to send command to avi writer 
+                fullpath_filename = os.path.join(log_values['data_directory'],movie_file)
+                t_min, t_sec = trial_values['recording_duration']
+                recording_duration = 60.0*t_min + 1.0*t_sec
+
+                try:
+                    recording_cmd_proxy = rospy.ServiceProxy('recording_cmd',RecordingCmd)
+                    response = recording_cmd_proxy( 
+                            recording_cmd,
+                            fullpath_filename,
+                            recording_duration,
+                            )
+                except rospy.ServiceException, e:
+                    proxy_error_msg = str(e)
+                    recording_flag = 0
+
         db.set('recording_flag',recording_flag)
 
         # Set the recording button text based on whether or not we
@@ -138,42 +161,13 @@ def capture():
         # Create the kwargs to pass to the render template function
         kwargs = dict(BASE_KWARGS)
         kwargs['current_tab'] = config.tab_dict['capture']['tab']
-        kwargs['setup_display'] = display_tools.get_setup_display(setup_values)
+        kwargs['log_display'] = display_tools.get_log_display(log_values)
+        kwargs['trial_display'] = display_tools.get_trial_display(trial_values)
         kwargs['recording_button_text'] = recording_button_text
         kwargs['proxy_error_msg'] = proxy_error_msg
+        kwargs['avi_exists_flag'] = avi_exists_flag
+
         return flask.render_template('capture.html',**kwargs)
-
-@app.route('/setup',methods=['GET','POST'])
-def setup():
-    """
-    Handles request for the setup or (change settings) tab.
-    """
-    t_min = None
-    recording_flag = db.get('recording_flag')
-    kwargs = dict(BASE_KWARGS)
-    kwargs['current_tab'] = config.tab_dict['setup']['tab']
-
-    setup_values = db_tools.get_dict(db,'setup_values')
-
-    if flask.request.method == 'POST':
-        if 'submit_values' in flask.request.form:
-            setup_values['movie_file'] = str(flask.request.form['movie_file'])
-            t_min = int(flask.request.form['duration_min'])
-            t_sec = int(flask.request.form['duration_sec'])
-            setup_values['recording_duration'] = (t_min, t_sec)
-            db_tools.set_dict(db,'setup_values', setup_values)
-    else:
-        pass
-
-    kwargs.update(setup_values)
-    
-    if recording_flag == 0:
-        kwargs['disabled'] = ''
-        kwargs['test'] = type(t_min)
-        return flask.render_template('setup.html',**kwargs)
-    else:
-        kwargs['disabled'] = 'disabled'
-        return flask.render_template('setup.html',**kwargs)
 
 @app.route('/fullsize_view', methods=['GET'])
 def fullsize_view():
@@ -202,6 +196,81 @@ def fullsize_view():
     kwargs['image_height'] = image_height
 
     return flask.render_template('fullsize_view.html',**kwargs)
+
+@app.route('/trial_settings',methods=['GET','POST'])
+def trial_settings():
+    """
+    Handles request for the trial settings tab.
+    """
+    recording_flag = db.get('recording_flag')
+    kwargs = dict(BASE_KWARGS)
+    kwargs['current_tab'] = config.tab_dict['trial_settings']['tab']
+    trial_values = db_tools.get_dict(db,'trial_values')
+
+    values_set_flag = False
+    if flask.request.method == 'POST':
+        if 'set_values' in flask.request.form:
+
+            # Extract trial values from request form
+            trial_values = form_tools.update_trial_values(trial_values,flask.request.form)
+            db_tools.set_dict(db,'trial_values', trial_values)
+            values_set_flag = True
+
+            # Check trial values and get any flags 
+        if 'save_values':
+            saved_trials = db_tools.get_dict(db,'saved_trials')
+
+    kwargs.update(trial_values)
+    kwargs['values_set_flag'] = values_set_flag
+    kwargs['trial_display'] = display_tools.get_trial_display(trial_values)
+    
+    if recording_flag == 0:
+        kwargs['disabled'] = ''
+    else:
+        kwargs['disabled'] = 'disabled'
+    return flask.render_template('trial_settings.html',**kwargs)
+
+@app.route('/logging', methods=['GET','POST'])
+def logging():
+    """
+    Handlers requests for the logging tab
+    """
+    recording_flag = db.get('recording_flag')
+    kwargs = dict(BASE_KWARGS)
+    kwargs['current_tab'] = config.tab_dict['logging']['tab']
+    log_values = db_tools.get_dict(db,'log_values')
+
+    set_values_flag = False
+    delete_selected_flag = False
+    if flask.request.method == 'POST':
+
+        if 'set_values' in flask.request.form:
+            log_values = form_tools.update_log_values(log_values,flask.request.form)
+            existing_avi = file_tools.get_existing_avi(log_values['data_directory'])
+            db_tools.set_dict(db,'log_values', log_values)
+            set_values_flag = True
+
+        if 'delete_selected_files' in flask.request.form:
+            avi_files = form_tools.get_selected_avi_files(flask.request.form)
+            file_tools.delete_data_files(avi_files, log_values['data_directory'])
+            kwargs['avi_files'] = avi_files
+            delete_selected_flag = True
+
+    kwargs.update(log_values)
+    kwargs['set_values_flag'] = set_values_flag
+    kwargs['deleted_selected_flag'] = delete_selected_flag
+    kwargs['log_display'] = display_tools.get_log_display(log_values,show_file_suffix=True)
+
+    # Get list of existing avi files with size and time information
+    existing_avi = file_tools.get_existing_avi(log_values['data_directory'],info=True)
+    avi_display = display_tools.get_colored_list(existing_avi,color_vals=('c2','c1'))
+
+    kwargs['avi_display'] = avi_display 
+    if recording_flag == 0:
+        kwargs['disabled'] = ''
+    else:
+        kwargs['disabled'] = 'disabled'
+    return flask.render_template('logging.html', **kwargs)
 
 @app.route('/info')
 def info():
@@ -235,7 +304,8 @@ def info():
     db_port_info = display_tools.get_colored_list(db_port_info,color_vals=('c2','c1'))
 
     # Create keyword arguments for render_template
-    kwargs['data_directory'] = config.data_directory
+    log_values = db_tools.get_dict(db,'log_values')
+    kwargs['data_directory'] = log_values['data_directory']
     kwargs['computer_info'] = computer_info
     kwargs['ros_topics'] = ros_topics
     kwargs['db_port_info'] = db_port_info

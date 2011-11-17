@@ -1,23 +1,12 @@
-{% extends "layout.html" %}
+{% extends "settings.html" %}
 {% block body %}
 {{ super() }}
 
-{% if disabled %}
 <br/>
-<p class="warning" > <strong> Recording in progress - settings cannot be changed </strong> </p>
-{% endif %}
-
+<strong> Trial Settings </strong> <br/>
 <br/>
-<form name="setup_form" method="post">
+<form name="trial_settings_form" method="post">
     <table>
-        <tr>
-            <td class="c1"> Movie File: </td> 
-            <td class="c1"> <input name="movie_file" {{disabled}} type="text" size="65" value={{movie_file}} /> (.avi) </td>
-            <td class="c1"> extension added automatically </td>
-            <td class="c1"> 
-                overwrite <input name="overwrite" {{disabled}} type="checkbox" checked={{overwrite}} /> 
-            </td>
-        </tr>
         <tr>
             <td class="c2"> Recording Duration: </td> 
             <td class="c2">  
@@ -69,18 +58,30 @@
         </tr>
     </table>
     <br/>
-    <button {{disabled}} type="submit"name="submit_values"> Submit Values</button> 
+    <button {{disabled}} type="submit" name="set_values"> Update Values</button> 
+    &nbsp;&nbsp;
+    <button {{disabled}} type="submit" name="save_values"> Save Values As </button>
+    <input name="save_name" {{disabled}} type="text" size=57 /> 
 </form>
-<br/><br/>
-{% if request.form %}
-<strong> Submitted values (Debug) </strong> <br/>
-{% endif %}
-<p> 
-{% for item, value in request.form.iteritems() %}
-    {{item}}, {{value}} <br/>
-{% endfor %}
-</p>
 
-{{test}}
+{% if values_set_flag %}
+    <br/> <br/>
+    <strong> Values Set To: </strong> 
+    <br/><br/>
+    <table>
+    {% for item in trial_display %}
+        <tr>
+            <td class="{{item['class']}}"> {{item['name']}} </td>  
+            <td class="{{item['class']}}"> {{item['value']}} </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endif %}
+
+<br/> <br/>
+<strong> Saved Trial Values: </strong>
+
+<br/>
+<br/>
 
 {% endblock %}

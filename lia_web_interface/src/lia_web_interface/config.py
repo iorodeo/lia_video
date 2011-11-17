@@ -11,35 +11,46 @@ tab_dict = {
             'tab':'tab1',
             'label': 'Capture Control',
             },
-        'setup': {
-            'tab': 'tab2',
-            'label': 'Change Settings',
-            },
         'fullsize_view': {
-            'tab': 'tab3',
+            'tab': 'tab2',
             'label': 'Fullsize View',
             },
-        'info': {
+        'trial_settings': {
+            'tab': 'tab3',
+            'label': 'Trial Settings',
+            },
+        'logging': {
             'tab': 'tab4',
+            'label': 'Log Settings',
+            },
+        'info': {
+            'tab': 'tab5',
             'label': 'System Info',
             },
         'docs': { 
-            'tab': 'tab5',
+            'tab': 'tab6',
             'label': 'Manual',
             },
         }
 
-tab_order = ['capture', 'setup', 'fullsize_view', 'info','docs']
+tab_order = ['capture', 'fullsize_view', 'trial_settings', 'logging', 'info','docs']
 
-setup_defaults = {
-        'movie_file': 'default.avi',
-        'overwrite': 'yes',
+trial_values_default = {
         'recording_duration': (10,0),
         'number_pulses': 2,
         'pulse_start_time': (3,0),
         'pulse_period': 60,
         'pulse_duty_cycle': 50,
         'pulse_power': 50,
+        }
+
+log_values_default = {
+        'data_directory': os.path.join(os.environ['HOME'],'lia_data'),
+        'movie_file': 'default.avi',
+        'overwrite': 'yes',
+        'append_datetime': 'yes',
+        'settings_file_suffix': '_settings',
+        'timing_file_suffix': '_timing',
         }
 
 # Interfaces and ports 
@@ -69,8 +80,6 @@ fullsize_scale_options = [str(0.1*x) for x in range(10,0,-1)]
 # Redis database#
 redis_db = 10
 
-# Data directory
-data_directory = os.path.join(os.environ['HOME'],'lia_data')
 
 
 

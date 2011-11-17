@@ -31,11 +31,14 @@
         <img src="http://{{hostaddr}}:{{progress_mjpeg_port}}/stream?topic={{progress_message_topic}}" />
     </div>
 </div>
+
 <div class="infobox">
-    <h2 style="text-align:center;"> <strong> Settings </strong> </h2>
-    <br/>
+
+
+    <strong> Trial Settings </strong> 
+    <br/><br/>
     <table>
-    {% for item in setup_display %}
+    {% for item in trial_display %}
         <tr>
             <td class="{{item['class']}}"> {{item['name']}} </td>  
             <td class="{{item['class']}}"> {{item['value']}} </td>
@@ -44,13 +47,33 @@
     </table>
     <br/>
     <br/>
+    
+    <strong> Log Settings </strong> 
+    <br/><br/>
+    <table>
+    {% for item in log_display %}
+        <tr>
+            <td class="{{item['class']}}"> {{item['name']}} </td>  
+            <td class="{{item['class']}}"> {{item['value']}} </td>
+        </tr>
+    {% endfor %}
+    </table>
+    <br/>
+    <br/>
+
     <div style="text-align:left;">
         <form method="post" name="recording_form">
             <button type="submit" name="recording_button" id="recording_button">{{recording_button_text}} </button>
+            {% if avi_exists_flag %}
+                &nbsp;
+                <span class="warning">  <strong> Aborted - movie file exists, overwrite = no </strong> </span>
+            {% endif %}
+            {% if proxy_error_msg %}
+                <span class="warning"> <strong> {{proxy_error_msg}} </strong> </span>
+            {% endif %}
+
         </form>
     </div>
-    {% if proxy_error_msg %}
-    <a class="warning"> {{proxy_error_msg}}</a>
-    {% endif %}
+
 </div>
 {% endblock %}

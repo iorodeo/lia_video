@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block head %}
+{{ super() }}
+
+{% endblock %}
+{% block body%}
+{{ super() }}
+
+{% if disabled %}
+<br/>
+<p class="warning" > <strong> Recording in progress - settings cannot be updated </strong> </p>
+{% endif %}
+
+{% endblock %}

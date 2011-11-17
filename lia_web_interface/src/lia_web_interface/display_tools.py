@@ -1,50 +1,86 @@
 """
 A collection of service functions usefull for createing the web display.
 """
-import config 
 
-def get_setup_display(setup_values): 
+def get_log_display(log_values, show_file_suffix=False):
     """
-    Creates a display list for a given set of setup values.
+    Creates a display list for a given set of log values
     """
-    setup_display = [ 
+    log_display = [ 
+            {
+                'name': 'Data Directory',
+                'value': log_values['data_directory'],
+                'class': 'c2',
+                },
             { 
                 'name': 'Movie File', 
-                'value': '%s, overwrite = %s'%(setup_values['movie_file'], setup_values['overwrite']),
+                'value': log_values['movie_file'],
                 'class': 'c1',
                 },
             {
+                'name': 'Overwrite',
+                'value': log_values['overwrite'],
+                'class': 'c2',
+                },
+            {
+                'name': 'Append Datetime',
+                'value': log_values['append_datetime'],
+                'class': 'c1',
+                },
+            ]
+    if show_file_suffix:
+        suffix_display = [
+            {
+                'name': 'Settings File Suffix',
+                'value': log_values['settings_file_suffix'],
+                'class': 'c2',
+                },
+            {
+                'name': 'Timing File Suffix',
+                'value': log_values['timing_file_suffix'],
+                'class': 'c1',
+                },
+            ]
+        log_display.extend(suffix_display)
+    return log_display
+
+def get_trial_display(trial_values): 
+    """
+    Creates a display list for a given set of trial values.
+    """
+    trial_display = [ 
+            {
                 'name': 'Recording Duration', 
-                'value': '%d min %d sec'%setup_values['recording_duration'],
+                'value': '%d min %d sec'%trial_values['recording_duration'],
                 'class': 'c2',
                 },
             {
                 'name': 'Number of Pulses',
-                'value': '%d'%(setup_values['number_pulses'],),
+                'value': '%d'%(trial_values['number_pulses'],),
                 'class': 'c1',
                 },
             {   
                 'name': 'Pulse Start Time',
-                'value': '%d min %d sec'%setup_values['pulse_start_time'],
+                'value': '%d min %d sec'%trial_values['pulse_start_time'],
                 'class': 'c2',
                 },
             {
                 'name': 'Pulse Period',
-                'value': '%d sec'%(setup_values['pulse_period'],),
+                'value': '%d sec'%(trial_values['pulse_period'],),
                 'class': 'c1',
                 },
             {
                 'name': 'Pulse Duty Cycle',
-                'value': '%d%%'%(setup_values['pulse_duty_cycle'],),
+                'value': '%d%%'%(trial_values['pulse_duty_cycle'],),
                 'class': 'c2',
                 },
             {
                 'name': 'Pulse Power',
-                'value': '%d%%'%(setup_values['pulse_power'],),
+                'value': '%d%%'%(trial_values['pulse_power'],),
                 'class': 'c1',
                 }
             ]
-    return setup_display
+    return trial_display
 
 def get_recording_button_text(recording_flag):
     """
@@ -67,3 +103,6 @@ def get_colored_list(input_list, color_vals=('c1', 'c2')):
             colored_data = (data, color)
         output_list.append(colored_data)
     return output_list
+
+
+
