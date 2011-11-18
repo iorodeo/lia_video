@@ -9,6 +9,8 @@ import cv
 import numpy
 import threading
 import math
+import redis
+import lia_config
 
 import Image as PILImage
 import ImageDraw as PILImageDraw
@@ -33,11 +35,12 @@ class AVI_Writer(object):
         self.frame_rate = 24.0 # This is a kludge - get from image topic
         self.done = True 
         self.cv_image_size = None
+        self.redis_db = redis.Redis('localhost', db=lia_config.redis_db)
 
         self.bridge = CvBridge()
         rospy.init_node('avi_writer')
 
-        self.record_t = 1*60.0 
+        self.record_t = 10.0 
         self.start_t = 0.0
         self.current_t = 0.0
         self.progress_t = 0.0 
@@ -128,6 +131,7 @@ class AVI_Writer(object):
                     del self.writer
                     self.writer = None
                     self.recording_message = 'finished'
+                    self.redis_db.set('recording_flag',0)
 
         # Update progress messages
         self.progress_bar.update(
@@ -161,7 +165,11 @@ class Progress_Bar(object):
         progress_t = kwargs['progress_t']
         record_t = kwargs['record_t']
         image_array = numpy.array(self.base_array)
-        fill_ind = int(self.image_shape[1]*progress_t/record_t)
+        if record_t > 0:
+            fill_ind = int(self.image_shape[1]*progress_t/record_t)
+        else:
+            fill_ind = self.image_shape[1]
+
         for i in range(0,3):
             image_array[:,:fill_ind,i] = self.fill_color[i]
         cv_image = cv.fromarray(image_array)

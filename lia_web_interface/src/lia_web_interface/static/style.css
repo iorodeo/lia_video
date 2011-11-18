@@ -32,6 +32,15 @@ h1.header {
     color:#006600;
 }
 
+.c1 {
+    background-color: #FFFFFF;
+    color: black;
+}
+
+.c2 {
+    background-color: #E6E6E6;
+    color: black;
+}
 /* Setup table */
 table {
     border-collapse: collapse;
@@ -46,15 +55,6 @@ td {
     padding-right: 2em;
 }
 
-td.c1 {
-    background-color: #FFFFFF;
-    color: black;
-}
-
-td.c2 {
-    background-color: #E6E6E6;
-    color: black;
-}
 /* End setup table */
 
 .warning {

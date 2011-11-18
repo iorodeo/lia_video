@@ -1,10 +1,13 @@
 <!-- Main ROS launch file for the lia video acquisition system. -->
 
 <launch>
+  
+  <arg name="lia_image_throttle"  value="/camera/image_throttle"/>
+  <param name="lia_image_throttle"  value="$(arg lia_image_throttle)" />
 
   <!-- Camera node -->
   <node pkg="camera1394" type="camera1394_node" name="camera1394_node" >
-    <rosparam file="camera_config.yaml"/>
+    <rosparam file="$(find lia_config)/launch/camera_config.yaml"/>
   </node>
 
   <!-- AVI writer node -->
@@ -16,15 +19,15 @@
 
   <!-- Image throttling nodes - for previewing -->
   <!-- Add throttling nodes for progress bar and progress messages -->
-  <node pkg="topic_tools" type="throttle" name="camera_throttler" args="messages /camera/image_raw 10.0 /camera/image_throttle" />
+  <node pkg="topic_tools" type="throttle" name="camera_throttler" args="messages /camera/image_raw 10.0 $(arg lia_image_throttle)" />
 
   <!-- MJPEG server for camera images -->
-  <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server_8080" >
+  <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server_camera" >
     <param name="port" value="8080"/>
   </node>
 
-  <!-- MJPEG server for camera images -->
-  <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server_8181" >
+  <!-- MJPEG server for progress images -->
+  <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server_progress" >
     <param name="port" value="8181"/>
   </node>
 

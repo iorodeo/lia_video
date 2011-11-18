@@ -40,8 +40,8 @@
     <table>
     {% for item in trial_display %}
         <tr>
-            <td class="{{item['class']}}"> {{item['name']}} </td>  
-            <td class="{{item['class']}}"> {{item['value']}} </td>
+            <td  class="{{item['class']}}"> {{item['name']}} </td>  
+            <td id="{{item['name'].replace(' ', '_')}}" class="{{item['class']}}"> {{item['value']}} </td>
         </tr>
     {% endfor %}
     </table>
@@ -54,25 +54,18 @@
     {% for item in log_display %}
         <tr>
             <td class="{{item['class']}}"> {{item['name']}} </td>  
-            <td class="{{item['class']}}"> {{item['value']}} </td>
+            <td id="{{item['name'].replace(' ','_')}}" class="{{item['class']}}"> {{item['value']}} </td>
         </tr>
     {% endfor %}
     </table>
     <br/>
     <br/>
 
-    <div style="text-align:left;">
-        <form method="post" name="recording_form">
-            <button type="submit" name="recording_button" id="recording_button">{{recording_button_text}} </button>
-            {% if avi_exists_flag %}
-                &nbsp;
-                <span class="warning">  <strong> Aborted - movie file exists, overwrite = no </strong> </span>
-            {% endif %}
-            {% if proxy_error_msg %}
-                <span class="warning"> <strong> {{proxy_error_msg}} </strong> </span>
-            {% endif %}
-
-        </form>
+    <div style="text-align:left;"> 
+        <button  name="recording_button" id="recording_button" onclick="Sijax.request('start_stop_recording');">{{recording_button_text}} </button>
+        &nbsp;
+        <span class="warning" id="avi_exists_message">  </span>
+        <span class="warning" id="proxy_error_message"> </span>
     </div>
 
 </div>

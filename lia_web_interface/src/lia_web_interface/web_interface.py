@@ -74,6 +74,10 @@ BASE_KWARGS = {
         'hostaddr': hostaddr,
         }
 
+
+# Routes
+# --------------------------------------------------------------------------------
+
 @app.route('/')
 def index():
     return flask.redirect(flask.url_for('capture'))
@@ -86,76 +90,16 @@ def capture():
     the capture display are in sync. A javascript timer is used to periodically
     query for the recording state.
     """
-
-    # Get recording flag and trial values from database
-    recording_flag = db.get('recording_flag')
-    trial_values = db_tools.get_dict(db,'trial_values')
-    log_values = db_tools.get_dict(db,'log_values')
-    proxy_error_msg = ''
-    avi_exists_flag = False
-
-    # Define sijax request handler
-    def update_recording_button(obj_response):
-        recording_button_text = display_tools.get_recording_button_text(recording_flag)
-        obj_response.html("#recording_button",recording_button_text)
-
     if flask.g.sijax.is_sijax_request:
-
         # This is a sijax request - let sijax handle it
         flask.g.sijax.register_callback('update_recording_button', update_recording_button)
+        flask.g.sijax.register_callback('start_stop_recording', start_stop_recording)
         return flask.g.sijax.process_request()
 
     else:
-
-        # This is a normal request
-
-        # If this is post toggle state of recording flag
-        if flask.request.method == 'POST':
-
-            abort = False
-
-            # Get movie file name
-            movie_file = log_values['movie_file']
-            if log_values['append_datetime'] == 'yes': 
-                movie_file = file_tools.add_datetime_suffix(movie_file)
-
-            if recording_flag == 0:  # Start recording
-
-                is_existing_avi = file_tools.is_existing_avi(log_values['data_directory'],movie_file)
-                if log_values['overwrite'] == 'no' and is_existing_avi:
-                    abort = True
-                    avi_exists_flag = True
-                else:
-                    recording_flag = 1
-                    recording_cmd = 'start'
-
-            else: # Stop recording
-
-                recording_flag = 0
-                recording_cmd = 'stop'
-
-            if not abort:
-
-                # Use Ros service to send command to avi writer 
-                fullpath_filename = os.path.join(log_values['data_directory'],movie_file)
-                t_min, t_sec = trial_values['recording_duration']
-                recording_duration = 60.0*t_min + 1.0*t_sec
-
-                try:
-                    recording_cmd_proxy = rospy.ServiceProxy('recording_cmd',RecordingCmd)
-                    response = recording_cmd_proxy( 
-                            recording_cmd,
-                            fullpath_filename,
-                            recording_duration,
-                            )
-                except rospy.ServiceException, e:
-                    proxy_error_msg = str(e)
-                    recording_flag = 0
-
-        db.set('recording_flag',recording_flag)
-
-        # Set the recording button text based on whether or not we
-        # are currently recording - sijax may make this unecessary, but it doesn't hurt
+        recording_flag = db.get('recording_flag')
+        trial_values = db_tools.get_dict(db,'trial_values')
+        log_values = db_tools.get_dict(db,'log_values')
         recording_button_text = display_tools.get_recording_button_text(recording_flag)
 
         # Create the kwargs to pass to the render template function
@@ -164,8 +108,6 @@ def capture():
         kwargs['log_display'] = display_tools.get_log_display(log_values)
         kwargs['trial_display'] = display_tools.get_trial_display(trial_values)
         kwargs['recording_button_text'] = recording_button_text
-        kwargs['proxy_error_msg'] = proxy_error_msg
-        kwargs['avi_exists_flag'] = avi_exists_flag
 
         return flask.render_template('capture.html',**kwargs)
 
@@ -206,8 +148,12 @@ def trial_settings():
     kwargs = dict(BASE_KWARGS)
     kwargs['current_tab'] = config.tab_dict['trial_settings']['tab']
     trial_values = db_tools.get_dict(db,'trial_values')
+    saved_trials = db_tools.get_dict(db,'saved_trials')
 
     values_set_flag = False
+    no_save_name_flag = False
+    trial_name_exists_flag = False
+
     if flask.request.method == 'POST':
         if 'set_values' in flask.request.form:
 
@@ -216,13 +162,38 @@ def trial_settings():
             db_tools.set_dict(db,'trial_values', trial_values)
             values_set_flag = True
 
-            # Check trial values and get any flags 
-        if 'save_values':
-            saved_trials = db_tools.get_dict(db,'saved_trials')
+        if 'save_values' in flask.request.form:
+            trial_name = str(flask.request.form['save_name'])
+            if trial_name:
+                # Extract trial values form request form
+                trial_values = form_tools.update_trial_values(trial_values,flask.request.form)
+                trial_names = [v['name'] for k,v in saved_trials.iteritems()]
+                if trial_name in trial_names:
+                    trial_name_exists_flag = True
+                else:
+                    trial_tag = trial_name.replace(' ', '_')
+                    saved_trials[trial_tag] = {'name': trial_name, 'values': trial_values}
+                    db_tools.set_dict(db,'saved_trials',saved_trials)
+            else:
+                no_save_name_flag = True
 
     kwargs.update(trial_values)
-    kwargs['values_set_flag'] = values_set_flag
     kwargs['trial_display'] = display_tools.get_trial_display(trial_values)
+    kwargs['no_save_name_flag'] = no_save_name_flag
+    kwargs['trial_name_exists_flag'] = trial_name_exists_flag
+    kwargs['values_set_flag'] = values_set_flag
+    kwargs['saved_trials'] = saved_trials
+
+    # Create display data for saved trials
+    saved_trials_display = []
+    for trial_tag, trial_dict in saved_trials.iteritems():
+        trial_name = trial_dict['name']
+        trial_values = trial_dict['values']
+        trial_display = display_tools.get_trial_display(trial_values)
+        saved_trials_display.append((trial_name, trial_tag, trial_display))
+    saved_trials_display.sort()
+    saved_trials_display = display_tools.get_colored_list(saved_trials_display,color_vals=('c2','c1'))
+    kwargs['saved_trials_display'] = saved_trials_display
     
     if recording_flag == 0:
         kwargs['disabled'] = ''
@@ -242,6 +213,7 @@ def logging():
 
     set_values_flag = False
     delete_selected_flag = False
+    select_all_flag = False
     if flask.request.method == 'POST':
 
         if 'set_values' in flask.request.form:
@@ -249,16 +221,20 @@ def logging():
             existing_avi = file_tools.get_existing_avi(log_values['data_directory'])
             db_tools.set_dict(db,'log_values', log_values)
             set_values_flag = True
-
         if 'delete_selected_files' in flask.request.form:
             avi_files = form_tools.get_selected_avi_files(flask.request.form)
             file_tools.delete_data_files(avi_files, log_values['data_directory'])
             kwargs['avi_files'] = avi_files
             delete_selected_flag = True
+        if 'select_all_files' in flask.request.form:
+            select_all_flag = True
+        if 'clear_all_files' in flask.request.form:
+            pass
 
     kwargs.update(log_values)
     kwargs['set_values_flag'] = set_values_flag
     kwargs['deleted_selected_flag'] = delete_selected_flag
+    kwargs['select_all_flag'] = select_all_flag
     kwargs['log_display'] = display_tools.get_log_display(log_values,show_file_suffix=True)
 
     # Get list of existing avi files with size and time information
@@ -327,15 +303,102 @@ def cleanup():
 atexit.register(cleanup)
 
 
+# Sijax request handlers 
+# ----------------------------------------------------------------------------------
+def update_recording_button(obj_response):
+    """
+    Handles update request for the recording button text - keeps different clients in 
+    sync.
+    """
+    recording_flag = db.get('recording_flag')
+    trial_values = db_tools.get_dict(db,'trial_values')
+    log_values = db_tools.get_dict(db,'log_values')
+
+    # Update recording button
+    recording_button_text = display_tools.get_recording_button_text(recording_flag)
+    obj_response.html("#recording_button",recording_button_text)
+
+    # Update trial and log values
+    display_list = display_tools.get_log_display(log_values)
+    display_list.extend(display_tools.get_trial_display(trial_values))
+    for item in display_list:
+        name = item['name'].replace(' ','_')
+        obj_response.html('#%s'%(name,), item['value'])
+    return
+
+def start_stop_recording(obj_response): 
+    """
+    Handles requests to start/stop recording video
+    """
+
+    recording_flag = db.get('recording_flag')
+    trial_values = db_tools.get_dict(db,'trial_values')
+    log_values = db_tools.get_dict(db,'log_values')
+
+    # Get movie file name
+    movie_file = log_values['movie_file']
+    if log_values['append_datetime'] == 'yes': 
+        movie_file = file_tools.add_datetime_suffix(movie_file)
+
+    if recording_flag == 0:  # Start recording
+
+        # Check to see if file exists and if overwrite=no abort recording
+        is_existing_avi = file_tools.is_existing_avi(log_values['data_directory'],movie_file)
+        if log_values['overwrite'] == 'no' and is_existing_avi:
+            obj_response.html('#avi_exists_message', 'Aborted - movie file exists, overwrite=no')
+            return
+
+        else:
+            recording_flag = 1
+            recording_cmd = 'start'
+
+    else: # Stop recording
+
+        recording_flag = 0
+        recording_cmd = 'stop'
+
+    # Use Ros service to send command to avi writer 
+    fullpath_filename = os.path.join(log_values['data_directory'],movie_file)
+    t_min, t_sec = trial_values['recording_duration']
+    recording_duration = 60.0*t_min + 1.0*t_sec
+
+    try:
+        recording_cmd_proxy = rospy.ServiceProxy('recording_cmd',RecordingCmd)
+        response = recording_cmd_proxy( 
+                recording_cmd,
+                fullpath_filename,
+                recording_duration,
+                )
+        proxy_error_message = ''
+    except rospy.ServiceException, e:
+        proxy_error_message = str(e)
+        recording_flag = 0
+
+    db.set('recording_flag',recording_flag)
+    recording_button_text = display_tools.get_recording_button_text(recording_flag)
+    obj_response.html('#recording_button',recording_button_text)
+    obj_response.html('#avi_exists_message','')
+    obj_response.html('#proxy_error_message', proxy_error_message)
+    return
+
 # -----------------------------------------------------------------------------
 if __name__ == '__main__': 
-    if 1:
+    try:
+        server = sys.argv[1]
+    except IndexError:
+        server = 'tornado'
+
+    if server == 'debug':
+        print ' * using debug server'
         app.debug = True 
         app.run()
-    if 0:
+    elif server == 'builtin':
+        print ' * using builtin server'
         app.run(host='0.0.0.0')
-
-    if 0:
+    elif server == 'tornado':
+        print ' * using tornado server'
         http_server = HTTPServer(WSGIContainer(app))
         http_server.listen(5000)
         IOLoop.instance().start()
+    else: 
+        raise ValueError, 'uknown server option %s'%(server,)

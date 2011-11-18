@@ -1,0 +1,15 @@
+<package>
+  <description brief="lia_config">
+
+     lia_config
+
+  </description>
+  <author>Will Dickson</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/lia_config</url>
+  <depend package="rospy"/>
+
+</package>
+
+

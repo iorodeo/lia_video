@@ -9,6 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/web_interface</url>
   <depend package="rospy"/>
+  <depend package="lia_config" />
   <depend package="lia_services" />
 
 </package>

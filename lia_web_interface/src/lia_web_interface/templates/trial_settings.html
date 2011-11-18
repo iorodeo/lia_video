@@ -1,17 +1,31 @@
 {% extends "settings.html" %}
+
+{% block head %}
+{{ super() }}
+<script> 
+    function click_save_values(e) { 
+        // look for window.event in case event isn't passed in 
+        if (window.event) { e = window.event; }
+        if (e.keyCode == 13) { 
+            document.getElementById('save_values').click(); 
+        } }
+</script>
+{% endblock %}
+
 {% block body %}
 {{ super() }}
 
 <br/>
-<strong> Trial Settings </strong> <br/>
+<strong> Trial Settings </strong> 
+<br/>
 <br/>
 <form name="trial_settings_form" method="post">
     <table>
         <tr>
             <td class="c2"> Recording Duration: </td> 
             <td class="c2">  
-                <input name="duration_min" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{recording_duration[0]}} /> (min) &nbsp; 
-                <input name="duration_sec" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{recording_duration[1]}} /> (sec) 
+                <input id="duration_min" name="duration_min" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{recording_duration[0]}} /> (min) &nbsp; 
+                <input id="duration_sec" name="duration_sec" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{recording_duration[1]}} /> (sec) 
             </td>
             <td class="c2"> </td>
             <td class="c2"> </td>
@@ -19,7 +33,7 @@
         <tr>
             <td class="c1"> Number of Pulses: </td>
             <td class="c1">
-                <input name="number_pulses" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{number_pulses}} />  
+                <input id="number_pulses" name="number_pulses" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size="10" value={{number_pulses}} />  
             </td>
             <td class="c1">
             </td>
@@ -27,8 +41,8 @@
         <tr>   
             <td class="c2"> Pulse Start Time: </td> 
             <td class="c2"> 
-                <input name="pulse_start_time_min" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_start_time[0]}} /> (min) &nbsp;
-                <input name="pulse_start_time_sec" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_start_time[1]}} /> (sec) 
+                <input id="pulse_start_time_min" name="pulse_start_time_min" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_start_time[0]}} /> (min) &nbsp;
+                <input id="pulse_start_time_sec" name="pulse_start_time_sec" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_start_time[1]}} /> (sec) 
             </td>
             <td class="c2"> </td> 
             <td class="c2"> </td>
@@ -36,14 +50,14 @@
         <tr> 
             <td class="c1"> Pulse Period: </td> 
             <td class="c1"> 
-                <input name="pulse_period" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_period}} /> (sec) 
+                <input id="pulse_period" name="pulse_period" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_period}} /> (sec) 
             </td>
             <td class="c1"> </td>
         </tr>
         <tr>
             <td class="c2"> Pulse Duty Cycle: </td>
             <td class="c2"> 
-                <input name="pulse_duty_cycle" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_duty_cycle}} /> (%) 
+                <input id="pulse_duty_cycle" name="pulse_duty_cycle" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_duty_cycle}} /> (%) 
             </td>
             <td class="c2"> </td>
             <td class="c2"> </td>
@@ -51,18 +65,25 @@
         <tr>
             <td class="c1"> Pulse Power: </td>
             <td class="c1"> 
-                <input name="pulse_power" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_power}} /> (%) 
+                <input id="pulse_power" name="pulse_power" {{disabled}} type="text" onKeyPress="return numbersonly(this,event)" size=10 value={{pulse_power}} /> (%) 
             </td>
             <td class="c1"> </td>
             <td class="c1"> </td>
         </tr>
     </table>
     <br/>
-    <button {{disabled}} type="submit" name="set_values"> Update Values</button> 
+    <button {{disabled}} type="submit" id="set_values" name="set_values"> Update Values</button> 
     &nbsp;&nbsp;
-    <button {{disabled}} type="submit" name="save_values"> Save Values As </button>
-    <input name="save_name" {{disabled}} type="text" size=57 /> 
+    <button {{disabled}} type="submit" id="save_values" name="save_values"  > Save Values As </button>
+    <input id="save_name" name="save_name" {{disabled}} type="text" size=57 onkeypress="click_save_values(event);" /> 
 </form>
+
+{% if no_save_name_flag %}
+<p class="warning"> Unable to save trial values - name is empty </p>
+{% endif %}
+{%if trial_name_exists_flag %}
+<p class="warning"> Unable to save trial values - a saved trial with this name already exists </p>
+{% endif %}
 
 {% if values_set_flag %}
     <br/> <br/>
@@ -80,8 +101,46 @@
 
 <br/> <br/>
 <strong> Saved Trial Values: </strong>
-
+<hr/>
 <br/>
 <br/>
 
+{% if saved_trials_display %}
+    <form name="saved_trials" method="post"> 
+        {% for name, tag, display, color in saved_trials_display %}
+            <table class="{{color}}">
+                <tr>
+                    <td style="text-align:left"> 
+                        Name: {{name}} 
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {% for item in display %}
+                            {{item['name']}}={{item['value']}}, &nbsp;
+                        {% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox" name="checkbox_{{tag}}" ></input>
+                        <button type="submit" name="load_{{tag}}">   Load   </button> 
+                        <button type="submit" name="delete_{{tag}}"> Delete </button> 
+                    </td>
+                </tr>
+            </table>
+        {% endfor %}
+        <br/>
+        <br/>
+        <button type="submit" name="select_all_trials"> Select All </button>
+        <button type="submit" name="clear_all_trials"> Clear All</button>
+        &nbsp;&nbsp;
+        <button type="submit" name="delete_selected_trials"> Delect Selected Trials</button>
+    </form>
+{% else %}
+    No saved trials
+{% endif %}
+
+<br/>
+<br/>
 {% endblock %}
