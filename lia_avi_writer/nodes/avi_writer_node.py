@@ -193,8 +193,8 @@ class Progress_Message(object):
         progress_t = kwargs['progress_t']
 
         # Get minutes and seconds
-        record_min, record_sec = get_min_and_sec(record_t)
-        progress_min, progress_sec = get_min_and_sec(progress_t)
+        record_hr, record_min, record_sec = get_hr_min_sec(record_t)
+        progress_hr, progress_min, progress_sec = get_hr_min_sec(progress_t)
 
         # Create PIL image and write text to it
         pil_image = PILImage.new('RGB',(640,30),(255,255,255))
@@ -206,8 +206,8 @@ class Progress_Message(object):
         frame_text = 'frame %d'%(frame_count,)
         draw.text((160,10),frame_text,font=self.font,fill=self.fill)
 
-        time_text = '%d:%02d/%d:%02d'%(progress_min,progress_sec,record_min,record_sec)
-        draw.text((450,10),time_text,font=self.font,fill=self.fill)
+        time_text = '%02d:%02d:%02d/%02d:%02d:%02d'%(progress_hr,progress_min,progress_sec,record_hr,record_min,record_sec)
+        draw.text((430,10),time_text,font=self.font,fill=self.fill)
 
         # Convert to opencv image, then to ROS image and publish
         cv_image = cv.CreateImageHeader(pil_image.size, cv.IPL_DEPTH_8U, 3)
@@ -218,10 +218,12 @@ class Progress_Message(object):
         self.count+=1
 
 
-def get_min_and_sec(t):
-    t_min = int(math.floor(t/60.0))
-    t_sec = int(math.floor(t - 60*t_min))
-    return t_min, t_sec
+def get_hr_min_sec(t):
+    t_hr = int(math.floor(t/3600.0))
+    t_rem = t - t_hr*3600.0
+    t_min = int(math.floor(t_rem/60.0))
+    t_sec = int(math.floor(t_rem - 60*t_min))
+    return t_hr, t_min, t_sec
 
 
 

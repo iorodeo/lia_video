@@ -2,18 +2,18 @@
 {% block body%}
 {{ super() }}
 
-<br/>
+<br>
 <strong> Data Directory </strong>
-<br/>
+<br>
 <table>
     <tr>
         <td class="c2"> {{data_directory}} </td>
     </tr>
 </table>
 
-<br/>
+<br>
 <strong> Computer </strong> 
-<br/>
+<br>
 <table>
     {% for name, value, color in computer_info %}
         <tr>
@@ -22,7 +22,7 @@
     {% endfor %}
 </table>
 
-<br/>
+<br>
 <strong> MJPEG Streams </strong>
 <table>
     <tr>
@@ -47,11 +47,11 @@
         </td>
     </tr>
 </table>
-<br/>
+<br>
 
-<br/> 
+<br> 
 <strong> ROS Topics </strong> 
-<br/>
+<br>
 <table>
     {% for topic, color in ros_topics %}
         <tr>
@@ -60,7 +60,7 @@
     {% endfor %}
 </table>
 
-<br/> <br/>
+<br> <br>
 <strong> Database and Ports </strong>
 <table>
     {% for name, value, color in db_port_info %}

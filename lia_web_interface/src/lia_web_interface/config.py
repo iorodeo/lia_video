@@ -39,32 +39,32 @@ tab_dict = {
 tab_order = ['capture', 'fullsize_view', 'trial_settings', 'logging', 'info','docs']
 
 trial_values_default = {
-        'recording_duration': (10,0),
-        'number_pulses': 2,
-        'pulse_start_time': (3,0),
-        'pulse_period': 60,
-        'pulse_duty_cycle': 50,
-        'pulse_power': 50,
+        'recording_duration' : (0,10,0),
+        'pulse_start_time'   : (0,3,0),
+        'pulse_period'       : (0,1,0),
+        'pulse_high_time'    : (0,0,30),
+        'number_of_pulses'   : 2,
+        'pulse_power'        : 50,
         }
 
 log_values_default = {
-        'data_directory': os.path.join(os.environ['HOME'],'lia_data'),
-        'movie_file': 'default.avi',
-        'overwrite': 'yes',
-        'append_datetime': 'yes',
-        'settings_file_suffix': '_settings',
-        'timing_file_suffix': '_timing',
+        'data_directory'       : os.path.join(os.environ['HOME'],'lia_data'),
+        'movie_file'           : 'default.avi',
+        'overwrite'            : 'yes',
+        'append_datetime'      : 'yes',
+        'settings_file_suffix' : '_settings',
+        'timing_file_suffix'   : '_timing',
         }
 
 # Image sizes for different views
 fullsize_tab_image = {
-        'width': 1280,
-        'height': 1024,
+        'width'  : 1280,
+        'height' : 1024,
         }
 
 capture_tab_image = {
-        'width': fullsize_tab_image['width']/2,
-        'height': fullsize_tab_image['height']/2,
+        'width'  : fullsize_tab_image['width']/2,
+        'height' : fullsize_tab_image['height']/2,
         }
 
 # Fullsize tab scale options

@@ -11,6 +11,7 @@ from tornado.ioloop import IOLoop
 import flask
 import flaskext.sijax
 
+import re
 import sys
 import os
 import redis
@@ -147,14 +148,20 @@ def trial_settings():
     recording_flag = db.get('recording_flag')
     kwargs = dict(BASE_KWARGS)
     kwargs['current_tab'] = config.tab_dict['trial_settings']['tab']
+
     trial_values = db_tools.get_dict(db,'trial_values')
     saved_trials = db_tools.get_dict(db,'saved_trials')
 
     values_set_flag = False
     no_save_name_flag = False
     trial_name_exists_flag = False
+    trial_saved_flag = False
+    saved_trial_name = ''
+    loaded_trial_name = ''
+    deleted_trial_names = []
 
     if flask.request.method == 'POST':
+
         if 'set_values' in flask.request.form:
 
             # Extract trial values from request form
@@ -162,7 +169,7 @@ def trial_settings():
             db_tools.set_dict(db,'trial_values', trial_values)
             values_set_flag = True
 
-        if 'save_values' in flask.request.form:
+        elif 'save_values' in flask.request.form:
             trial_name = str(flask.request.form['save_name'])
             if trial_name:
                 # Extract trial values form request form
@@ -174,15 +181,56 @@ def trial_settings():
                     trial_tag = trial_name.replace(' ', '_')
                     saved_trials[trial_tag] = {'name': trial_name, 'values': trial_values}
                     db_tools.set_dict(db,'saved_trials',saved_trials)
+                    trial_saved_flag = True
+                    saved_trial_name = trial_name
             else:
                 no_save_name_flag = True
 
+        elif 'delete_selected_trials' in flask.request.form:
+            deleted_trial_tags = form_tools.find_all_prefix_match('checkbox_',flask.request.form)
+            for tag in deleted_trial_tags:
+                try:
+                    deleted_trial_names.append(saved_trials[tag]['name'])
+                    del saved_trials[tag]
+                except KeyError:
+                    pass
+                db_tools.set_dict(db,'saved_trials',saved_trials)
+
+        else:
+            # Check if this is a request to delete a saved trial or to load
+            # a saved trial. 
+            delete_tag = form_tools.check_for_delete_tag(flask.request.form)
+            load_tag = form_tools.check_for_load_tag(flask.request.form)
+            if delete_tag is not None:
+                # This is a request to delete a saved trial
+                try:
+                    deleted_trial_names.append(saved_trials[delete_tag]['name'])
+                    del saved_trials[delete_tag]
+                except KeyError:
+                    pass
+                db_tools.set_dict(db,'saved_trials',saved_trials)
+
+            if load_tag is not None:
+                # This is a request to load a saved trial
+                try:
+                    trial_values = saved_trials[load_tag]['values']
+                    loaded_trial_name = saved_trials[load_tag]['name']
+                except KeyError:
+                    pass
+                db_tools.set_dict(db,'trial_values', trial_values)
+
+
     kwargs.update(trial_values)
+    kwargs['time_labels'] = display_tools.get_time_labels() 
     kwargs['trial_display'] = display_tools.get_trial_display(trial_values)
     kwargs['no_save_name_flag'] = no_save_name_flag
     kwargs['trial_name_exists_flag'] = trial_name_exists_flag
     kwargs['values_set_flag'] = values_set_flag
     kwargs['saved_trials'] = saved_trials
+    kwargs['trial_saved_flag'] = trial_saved_flag
+    kwargs['saved_trial_name'] = saved_trial_name
+    kwargs['loaded_trial_name'] = loaded_trial_name
+    kwargs['deleted_trial_names'] = deleted_trial_names
 
     # Create display data for saved trials
     saved_trials_display = []
@@ -212,8 +260,7 @@ def logging():
     log_values = db_tools.get_dict(db,'log_values')
 
     set_values_flag = False
-    delete_selected_flag = False
-    select_all_flag = False
+    deleted_avi_files = []
     if flask.request.method == 'POST':
 
         if 'set_values' in flask.request.form:
@@ -222,20 +269,14 @@ def logging():
             db_tools.set_dict(db,'log_values', log_values)
             set_values_flag = True
         if 'delete_selected_files' in flask.request.form:
-            avi_files = form_tools.get_selected_avi_files(flask.request.form)
-            file_tools.delete_data_files(avi_files, log_values['data_directory'])
-            kwargs['avi_files'] = avi_files
-            delete_selected_flag = True
-        if 'select_all_files' in flask.request.form:
-            select_all_flag = True
-        if 'clear_all_files' in flask.request.form:
-            pass
+            selected_avi_files = form_tools.get_selected_avi_files(flask.request.form)
+            file_tools.delete_data_files(selected_avi_files, log_values['data_directory'])
+            deleted_avi_files = selected_avi_files
 
     kwargs.update(log_values)
     kwargs['set_values_flag'] = set_values_flag
-    kwargs['deleted_selected_flag'] = delete_selected_flag
-    kwargs['select_all_flag'] = select_all_flag
     kwargs['log_display'] = display_tools.get_log_display(log_values,show_file_suffix=True)
+    kwargs['deleted_avi_files'] = deleted_avi_files
 
     # Get list of existing avi files with size and time information
     existing_avi = file_tools.get_existing_avi(log_values['data_directory'],info=True)
@@ -319,9 +360,14 @@ def update_recording_button(obj_response):
     obj_response.html("#recording_button",recording_button_text)
 
     # Update trial and log values
-    display_list = display_tools.get_log_display(log_values)
-    display_list.extend(display_tools.get_trial_display(trial_values))
-    for item in display_list:
+    trial_display = display_tools.get_trial_display(trial_values)
+    for item in trial_display:
+        name = item['name'].replace(' ','_')
+        obj_response.html('#%s_value'%(name,),item['value'])
+        obj_response.html('#%s_units'%(name,),item['units'])
+
+    log_display = display_tools.get_log_display(log_values)
+    for item in log_display:
         name = item['name'].replace(' ','_')
         obj_response.html('#%s'%(name,), item['value'])
     return
@@ -359,8 +405,8 @@ def start_stop_recording(obj_response):
 
     # Use Ros service to send command to avi writer 
     fullpath_filename = os.path.join(log_values['data_directory'],movie_file)
-    t_min, t_sec = trial_values['recording_duration']
-    recording_duration = 60.0*t_min + 1.0*t_sec
+    t_hr, t_min, t_sec = trial_values['recording_duration']
+    recording_duration = 3600.0*t_hr+ 60.0*t_min + 1.0*t_sec
 
     try:
         recording_cmd_proxy = rospy.ServiceProxy('recording_cmd',RecordingCmd)
@@ -383,6 +429,7 @@ def start_stop_recording(obj_response):
 
 # -----------------------------------------------------------------------------
 if __name__ == '__main__': 
+
     try:
         server = sys.argv[1]
     except IndexError:

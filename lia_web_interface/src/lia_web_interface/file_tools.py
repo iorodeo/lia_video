@@ -43,6 +43,7 @@ def get_existing_avi(data_dir,info=False):
     else:
         avi_info_files = []
         for i, f in enumerate(avi_files):
+            base,ext = os.path.splitext(f)
             f_path = os.path.join(data_dir,f)
             f_size = os.path.getsize(f_path)
             f_size = bytes_2_megabytes(f_size)
@@ -50,6 +51,7 @@ def get_existing_avi(data_dir,info=False):
             f_time = os.path.getmtime(f_path)
             f_time = time.ctime(f_time)
             avi_info_files.append((f,f_size,f_time))
+            #avi_info_files.append(('%s.mpg'%(base,),f_size,f_time))
         return avi_info_files
 
 def delete_data_files(avi_files, data_directory):

@@ -47,40 +47,76 @@ def get_log_display(log_values, show_file_suffix=False):
 def get_trial_display(trial_values): 
     """
     Creates a display list for a given set of trial values.
+
+    This is really kind of klunky ... 
     """
     trial_display = [ 
             {
-                'name': 'Recording Duration', 
-                'value': '%d min %d sec'%trial_values['recording_duration'],
-                'class': 'c2',
-                },
-            {
-                'name': 'Number of Pulses',
-                'value': '%d'%(trial_values['number_pulses'],),
-                'class': 'c1',
+                'tag'       : 'recording_duration', 
+                'name'      : 'Recording Duration', 
+                'value'     : time_display(trial_values['recording_duration']),
+                'units'     : time_units(),
+                'class'     : 'c2',
+                'value_num' : trial_values['recording_duration'],
+                'type'      : 'time',
                 },
             {   
-                'name': 'Pulse Start Time',
-                'value': '%d min %d sec'%trial_values['pulse_start_time'],
-                'class': 'c2',
+                'tag'       : 'pulse_start_time',
+                'name'      : 'Pulse Start Time',
+                'value'     : time_display(trial_values['pulse_start_time']), 
+                'units'     : time_units(),
+                'class'     : 'c1',
+                'value_num' : trial_values['pulse_start_time'],
+                'type'      : 'time',
                 },
             {
-                'name': 'Pulse Period',
-                'value': '%d sec'%(trial_values['pulse_period'],),
-                'class': 'c1',
+                'tag'       : 'pulse_high_time',
+                'name'      : 'Pulse High Time',
+                'value'     : time_display(trial_values['pulse_high_time'],),
+                'units'     : time_units(),
+                'class'     : 'c2',
+                'value_num' : trial_values['pulse_high_time'],
+                'type'      : 'time',
                 },
             {
-                'name': 'Pulse Duty Cycle',
-                'value': '%d%%'%(trial_values['pulse_duty_cycle'],),
-                'class': 'c2',
+                'tag'       : 'pulse_period',
+                'name'      : 'Pulse Period',
+                'value'     : time_display(trial_values['pulse_period']),
+                'units'     : time_units(),
+                'class'     : 'c1',
+                'value_num' : trial_values['pulse_period'],
+                'type'      : 'time',
                 },
             {
-                'name': 'Pulse Power',
-                'value': '%d%%'%(trial_values['pulse_power'],),
-                'class': 'c1',
-                }
+                'tag'        : 'number_of_pulses',
+                'name'       : 'Number of Pulses',
+                'value'      : '%d'%(trial_values['number_of_pulses'],),
+                'units'      : '',
+                'class'      : 'c2',
+                'value_num' : trial_values['number_of_pulses'],
+                'type'      : 'number',
+                },
+            {
+                'tag'       : 'pulse_power',
+                'name'      : 'Pulse Power',
+                'value'     : '%d'%(trial_values['pulse_power'],),
+                'units'     : '%',
+                'class'     : 'c1',
+                'value_num' : trial_values['pulse_power'],
+                'type'      : 'number'
+                },
             ]
     return trial_display
+
+
+def time_display(values):
+    return '%02d:%02d:%02d'%values
+
+def get_time_labels():
+    return zip((0,1,2),('hr','min','sec'))
+
+def time_units():
+    return 'hr:min:sec'
 
 def get_recording_button_text(recording_flag):
     """

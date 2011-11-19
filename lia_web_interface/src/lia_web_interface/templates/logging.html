@@ -2,13 +2,14 @@
 {% block head %}
 {{ super() }}
 
+
 {% endblock %}
 {% block body%}
 {{ super() }}
 
-<br/>
-<strong> Log Settings </strong> <br/>
-<br/>
+<br>
+<strong> Log Settings </strong> <br>
+<br>
 <form name="trial_settings_form" method="post">
     <table>
         <tr>
@@ -63,15 +64,15 @@
             <td class="c1"></td>
         </tr>
     </table>
-    <br/>
+    <br>
     <button {{disabled}} type="submit" name="set_values"> Update Values</button> 
 </form>
 
 {% if set_values_flag %}
-    <br/>
-    <br/>
+    <br>
+    <br>
     <strong> Values Set To: </strong> 
-    <br/><br/>
+    <br><br>
     <table>
     {% for item in log_display %}
         <tr>
@@ -82,10 +83,21 @@
     </table>
 {% endif %}
 
-<br/><br/>
+{% if deleted_avi_files %}
+<br>
+<br>
+<strong> Files Deleted </strong>
+<br>
+<br>
+{% for name in deleted_avi_files %}
+{{name}} <br>
+{% endfor %}
+{% endif %}
+
+<br><br>
 <strong> Existing Movie Files: </strong> 
 <hr/>
-<br/><br/>
+<br><br>
 {% if avi_display %}
     <form name=select_movies method="post">
         <table>
@@ -97,20 +109,16 @@
             </tr>
             {% for name, size, mtime, color in avi_display %}
             <tr>
-                {% if select_all_flag %}
-                    <td class="{{color}}"> <input type="checkbox" name="{{name}}" checked>  </input> </td>
-                {% else %}
-                    <td class="{{color}}"> <input type="checkbox" name="{{name}}" >  </input> </td>
-                {% endif %}
+                <td class="{{color}}"> <input class="movie_checkbox" type="checkbox" name="{{name}}">  </input> </td>
                 <td class="{{color}}"> {{name}} </td> 
                 <td class="{{color}}"> {{mtime}} </td>
                 <td class="{{color}}" style="text-align:right"> {{size}} </td>
             </tr>
             {% endfor %}
         </table>
-        <br/>
-        <button type="submit" name="select_all_files"> Select All </button>
-        <button type="submit" name="clear_all_files"> Clear All</button>
+        <br>
+        <button  name="select_all_files" onclick="check_all_by_class('movie_checkbox'); return false;"> Select All </button>
+        <button  name="clear_all_files" onclick="clear_all_by_class('movie_checkbox'); return false;"> Clear All </button>
         &nbsp;&nbsp;
         <button type="submit" name="delete_selected_files"> Delect Selected Files</button>
 

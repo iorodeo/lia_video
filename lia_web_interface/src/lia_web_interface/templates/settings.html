@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 {% block head %}
 {{ super() }}
-
+<script type="text/javascript" src="static/check_clear_all.js"> </script>
 {% endblock %}
 {% block body%}
 {{ super() }}
 
 {% if disabled %}
-<br/>
+<br>
 <p class="warning" > <strong> Recording in progress - settings cannot be updated </strong> </p>
 {% endif %}
 

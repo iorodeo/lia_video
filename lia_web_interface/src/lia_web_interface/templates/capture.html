@@ -36,20 +36,21 @@
 
 
     <strong> Trial Settings </strong> 
-    <br/><br/>
+    <br><br>
     <table>
     {% for item in trial_display %}
         <tr>
             <td  class="{{item['class']}}"> {{item['name']}} </td>  
-            <td id="{{item['name'].replace(' ', '_')}}" class="{{item['class']}}"> {{item['value']}} </td>
+            <td id="{{item['name'].replace(' ', '_')}}_value" class="{{item['class']}}" > {{item['value']}} </td>
+            <td id="{{item['name'].replace(' ', '_')}}_units" class="{{item['class']}}" > {{item['units']}} </td>
         </tr>
     {% endfor %}
     </table>
-    <br/>
-    <br/>
+    <br>
+    <br>
     
     <strong> Log Settings </strong> 
-    <br/><br/>
+    <br><br>
     <table>
     {% for item in log_display %}
         <tr>
@@ -58,8 +59,8 @@
         </tr>
     {% endfor %}
     </table>
-    <br/>
-    <br/>
+    <br>
+    <br>
 
     <div style="text-align:left;"> 
         <button  name="recording_button" id="recording_button" onclick="Sijax.request('start_stop_recording');">{{recording_button_text}} </button>
