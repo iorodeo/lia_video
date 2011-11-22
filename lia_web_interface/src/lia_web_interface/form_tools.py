@@ -139,10 +139,12 @@ def get_base_kwargs():
             'camera_topic': config.camera_topic,
             'progress_bar_topic': config.progress_bar_topic,
             'progress_message_topic': config.progress_message_topic,
+            'fps_topic': config.fps_topic,
             'capture_tab_image': config.capture_tab_image,
             'fullsize_tab_image': config.fullsize_tab_image,
             'camera_mjpeg_port': config.camera_mjpeg_port,
             'progress_mjpeg_port': config.progress_mjpeg_port,
+            'fps_mjpeg_port': config.fps_mjpeg_port,
             'hostaddr': hostaddr,
             }
     return base_kwargs
