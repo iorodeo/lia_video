@@ -75,4 +75,7 @@
     <param name="port" value="8282"/>
   </node>
 
+  <!-- Web interface -->
+  <node pkg="lia_web_interface" type="web_interface.py" name="web_interface" args="tornado"/>
+
 </launch>

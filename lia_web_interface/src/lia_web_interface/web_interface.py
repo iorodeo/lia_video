@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Web interface for the LIA (Light Induced Arousal) Video Acquisition System.
 

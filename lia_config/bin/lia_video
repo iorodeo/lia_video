@@ -1,0 +1,4 @@
+#!/bin/bash
+echo $LIA_VIRTUALENV
+source $LIA_VIRTUALENV/bin/activate
+roslaunch lia_config lia_video.launch
