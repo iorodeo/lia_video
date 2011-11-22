@@ -1,19 +1,16 @@
 <package>
-  <description brief="lia_avi_writer">
+  <description brief="lia_progress">
 
-     lia_avi_writer
+     lia_progress
 
   </description>
   <author>Will Dickson</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/lia_avi_writer</url>
+  <url>http://ros.org/wiki/lia_progress</url>
   <depend package="rospy"/>
   <depend package="opencv2"/>
   <depend package="cv_bridge"/>
-  <depend package="sensor_msgs"/>
-  <depend package="lia_config"/>
-  <depend package="lia_services"/>
   <depend package="lia_messages"/>
 
 </package>

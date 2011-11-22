@@ -1,19 +1,17 @@
 <package>
-  <description brief="lia_avi_writer">
+  <description brief="lia_fps_monitor">
 
-     lia_avi_writer
+     lia_fps_monitor
 
   </description>
   <author>Will Dickson</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/lia_avi_writer</url>
+  <url>http://ros.org/wiki/lia_fps_monitor</url>
   <depend package="rospy"/>
+  <depend package="sensor_msgs"/>
   <depend package="opencv2"/>
   <depend package="cv_bridge"/>
-  <depend package="sensor_msgs"/>
-  <depend package="lia_config"/>
-  <depend package="lia_services"/>
   <depend package="lia_messages"/>
 
 </package>

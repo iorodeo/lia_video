@@ -6,20 +6,16 @@ import sys
 import os
 import os.path
 import cv
-import numpy
 import threading
 import math
 import redis
 import lia_config
 
-import Image as PILImage
-import ImageDraw as PILImageDraw
-import ImageFont as PILImageFont
-
 # Messages
 from sensor_msgs.msg import Image
 from cv_bridge.cv_bridge import CvBridge 
 from cv_bridge.cv_bridge import CvBridgeError
+from lia_messages.msg import ProgressMsg
 
 # Services
 from lia_services.srv import RecordingCmd
@@ -28,18 +24,8 @@ from lia_services.srv import RecordingCmdResponse
 class AVI_Writer(object):
 
     def __init__(self,topic):
-        self.lock = threading.Lock()
-        self.filename = os.path.join(os.environ['HOME'],'default.avi')
+
         self.topic = topic
-        self.writer = None 
-        self.frame_rate = 24.0 # This is a kludge - get from image topic
-        self.done = True 
-        self.cv_image_size = None
-        self.redis_db = redis.Redis('localhost', db=lia_config.redis_db)
-
-        self.bridge = CvBridge()
-        rospy.init_node('avi_writer')
-
         self.record_t = 10.0 
         self.start_t = 0.0
         self.current_t = 0.0
@@ -47,9 +33,27 @@ class AVI_Writer(object):
         self.frame_count = 0
         self.recording_message = 'stopped'
 
-        self.progress_bar = Progress_Bar()
-        self.progress_message = Progress_Message()
+        self.frame_rate = 24.0 # This is a kludge - get from image topic
+        self.writer = None 
+        self.done = True 
+        self.cv_image_size = None
+        self.filename = os.path.join(os.environ['HOME'],'default.avi')
+
+        #self.progress_message = Progress_Message()
+
+        self.lock = threading.Lock()
+        self.redis_db = redis.Redis('localhost', db=lia_config.redis_db)
+        self.bridge = CvBridge()
+        rospy.init_node('avi_writer')
+
+        # Set up publications
+        self.progress_msg = ProgressMsg()
+        self.progress_pub = rospy.Publisher('progress',ProgressMsg)
+
+        # Subscribe to messages
         self.image_sub = rospy.Subscriber(self.topic,Image,self.image_handler)
+
+        # Set up services
         self.recording_srv = rospy.Service(
                 'recording_cmd', 
                 RecordingCmd, 
@@ -114,121 +118,34 @@ class AVI_Writer(object):
 
         if not self.done:
 
+            # Write video frame
+            cv.WriteFrame(self.writer,ipl_image)
+
             # Update times and frame count - these are used elsewhere so we 
             # need the lock
             with self.lock:
-                self.progress_t = self.current_t - self.start_t
                 self.frame_count += 1
-            print 'frame: ', self.frame_count
-
-            # Write video frame
-            cv.WriteFrame(self.writer,ipl_image)
-            
-            # Check to see if we are done recording - if so stop writing frames 
-            if self.current_t >= self.start_t + self.record_t:
-                with self.lock:
+                self.progress_t = self.current_t - self.start_t
+                
+                # Check to see if we are done recording - if so stop writing frames 
+                if self.current_t >= self.start_t + self.record_t:
                     self.done = True
                     del self.writer
                     self.writer = None
                     self.recording_message = 'finished'
                     self.redis_db.set('recording_flag',0)
 
-        # Update progress messages
-        self.progress_bar.update(
-                frame_count = self.frame_count,
-                record_t = self.record_t,
-                progress_t = self.progress_t
-                )
-
-        self.progress_message.update(
-                message = self.recording_message, 
-                frame_count =  self.frame_count,
-                record_t = self.record_t,
-                progress_t = self.progress_t
-                )
-
-
-class Progress_Bar(object):
-
-    def __init__(self):
-        self.image_shape = (15,640,3)
-        self.empty_color = (230,230,230)
-        self.fill_color = (0,0,200)
-        self.base_array = 255*numpy.ones(self.image_shape,dtype=numpy.uint8)
-        for i in range(0,3):
-            self.base_array[:,:,i] = self.empty_color[i]
-        self.bridge = CvBridge()
-        self.pub = rospy.Publisher('image_progress_bar', Image)
-
-    def update(self,**kwargs): 
-        frame_count = kwargs['frame_count']
-        progress_t = kwargs['progress_t']
-        record_t = kwargs['record_t']
-        image_array = numpy.array(self.base_array)
-        if record_t > 0:
-            fill_ind = int(self.image_shape[1]*progress_t/record_t)
-        else:
-            fill_ind = self.image_shape[1]
-
-        for i in range(0,3):
-            image_array[:,:fill_ind,i] = self.fill_color[i]
-        cv_image = cv.fromarray(image_array)
-        rosimage = self.bridge.cv_to_imgmsg(cv_image,'rgb8')
-        self.pub.publish(rosimage)
-
-class Progress_Message(object):
-
-    def __init__(self):
-        self.bridge = CvBridge()
-        self.pub = rospy.Publisher('image_progress_message', Image)
-        self.font = PILImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", 20)
-        self.fill = (0,0,0)
-        self.count = 0
-
-    def update(self,**kwargs): 
-        # Extract keyword arguments
-        message = kwargs['message']
-        frame_count = kwargs['frame_count']
-        record_t = kwargs['record_t']
-        progress_t = kwargs['progress_t']
-
-        # Get minutes and seconds
-        record_hr, record_min, record_sec = get_hr_min_sec(record_t)
-        progress_hr, progress_min, progress_sec = get_hr_min_sec(progress_t)
-
-        # Create PIL image and write text to it
-        pil_image = PILImage.new('RGB',(640,30),(255,255,255))
-        draw = PILImageDraw.Draw(pil_image)
-
-        message_text = '%s,'%(message,)
-        draw.text((0,10),message_text,font=self.font,fill=self.fill)
-
-        frame_text = 'frame %d'%(frame_count,)
-        draw.text((160,10),frame_text,font=self.font,fill=self.fill)
-
-        time_text = '%02d:%02d:%02d/%02d:%02d:%02d'%(progress_hr,progress_min,progress_sec,record_hr,record_min,record_sec)
-        draw.text((430,10),time_text,font=self.font,fill=self.fill)
-
-        # Convert to opencv image, then to ROS image and publish
-        cv_image = cv.CreateImageHeader(pil_image.size, cv.IPL_DEPTH_8U, 3)
-        cv.SetData(cv_image, pil_image.tostring())
-        rosimage = self.bridge.cv_to_imgmsg(cv_image,'rgb8')
-        self.pub.publish(rosimage)
-
-        self.count+=1
-
-
-def get_hr_min_sec(t):
-    t_hr = int(math.floor(t/3600.0))
-    t_rem = t - t_hr*3600.0
-    t_min = int(math.floor(t_rem/60.0))
-    t_sec = int(math.floor(t_rem - 60*t_min))
-    return t_hr, t_min, t_sec
-
-
+        # Publish progress message
+        with self.lock:
+            self.progress_msg.frame_count = self.frame_count
+            self.progress_msg.record_t = self.record_t
+            self.progress_msg.progress_t = self.progress_t
+            self.progress_msg.recording_message = self.recording_message
+        self.progress_pub.publish(self.progress_msg)
 
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
+
     topic = sys.argv[1]
     node = AVI_Writer(topic)
     node.run()

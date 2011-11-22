@@ -19,12 +19,12 @@ import atexit
 import time
 
 import config
-import iface_tools
 import display_tools
 import db_tools
 import time_tools
 import file_tools
 import form_tools
+import config_tools
 
 import roslib
 roslib.load_manifest('lia_web_interface')
@@ -35,15 +35,12 @@ from lia_services.srv import RecordingCmd
 
 # Set up application and database
 app = flask.Flask(__name__)
-
 db = redis.Redis('localhost', db=config.redis_db)
-db_tools.set_dict(db,'trial_values',config.trial_values_default)
-db_tools.set_dict(db,'log_values', config.log_values_default)
-db_tools.set_dict(db,'saved_trials',{})
-db.set('recording_flag', 0)
+db_tools.init_db(db)
 
 # Check for data directory - create if needed
-file_tools.check_dir(config.log_values_default['data_directory'])
+log_values = db_tools.get_dict(db,'log_values')
+file_tools.check_dir(log_values['data_directory'])
 
 # The path where the sijax extension puts its javascript files
 app.config["SIJAX_STATIC_PATH"] = os.path.join('.', os.path.dirname(__file__), 'static/js/sijax/')
@@ -51,30 +48,6 @@ app.config["SIJAX_JSON_URI"] = os.path.join('.',os.path.dirname(__file__), 'stat
 
 # Setup sijax
 flaskext.sijax.init_sijax(app)
-
-# Get hostaddr use ip address if possible
-try:
-    hostaddr= iface_tools.get_ip_addr('eth0')
-except KeyError, NameError:
-    print 'unable to get ip - using localhost'
-    hostaddr = 'localhost'
-
-# Basic set of keyword consants for use in calls to render_template
-# Counld move these to the database .... 
-BASE_KWARGS = {
-        'page_header': config.page_header,
-        'tab_dict': config.tab_dict,
-        'tab_order': config.tab_order,
-        'camera_topic': config.camera_topic,
-        'progress_bar_topic': config.progress_bar_topic,
-        'progress_message_topic': config.progress_message_topic,
-        'capture_tab_image': config.capture_tab_image,
-        'fullsize_tab_image': config.fullsize_tab_image,
-        'camera_mjpeg_port': config.camera_mjpeg_port,
-        'progress_mjpeg_port': config.progress_mjpeg_port,
-        'hostaddr': hostaddr,
-        }
-
 
 # Routes
 # --------------------------------------------------------------------------------
@@ -104,7 +77,7 @@ def capture():
         recording_button_text = display_tools.get_recording_button_text(recording_flag)
 
         # Create the kwargs to pass to the render template function
-        kwargs = dict(BASE_KWARGS)
+        kwargs = dict(form_tools.get_base_kwargs())
         kwargs['current_tab'] = config.tab_dict['capture']['tab']
         kwargs['log_display'] = display_tools.get_log_display(log_values)
         kwargs['trial_display'] = display_tools.get_trial_display(trial_values)
@@ -117,7 +90,7 @@ def fullsize_view():
     """
     Handles requests for the fullsize view page
     """
-    kwargs = dict(BASE_KWARGS)
+    kwargs = dict(form_tools.get_base_kwargs())
     kwargs['current_tab'] = config.tab_dict['fullsize_view']['tab']
     scale_options = config.fullsize_scale_options
 
@@ -146,7 +119,7 @@ def trial_settings():
     Handles request for the trial settings tab.
     """
     recording_flag = db.get('recording_flag')
-    kwargs = dict(BASE_KWARGS)
+    kwargs = dict(form_tools.get_base_kwargs())
     kwargs['current_tab'] = config.tab_dict['trial_settings']['tab']
 
     trial_values = db_tools.get_dict(db,'trial_values')
@@ -223,11 +196,18 @@ def trial_settings():
     kwargs.update(trial_values)
     kwargs['time_labels'] = display_tools.get_time_labels() 
     kwargs['trial_display'] = display_tools.get_trial_display(trial_values)
+
     kwargs['no_save_name_flag'] = no_save_name_flag
     kwargs['trial_name_exists_flag'] = trial_name_exists_flag
     kwargs['values_set_flag'] = values_set_flag
-    kwargs['saved_trials'] = saved_trials
     kwargs['trial_saved_flag'] = trial_saved_flag
+    kwargs['flags'] = {
+            'no_save_name': no_save_name_flag,
+            'trial_name_exists': trial_name_exists_flag,
+            'values_set': values_set_flag,
+            'trial_saved': trial_saved_flag,
+            }
+    kwargs['saved_trials'] = saved_trials
     kwargs['saved_trial_name'] = saved_trial_name
     kwargs['loaded_trial_name'] = loaded_trial_name
     kwargs['deleted_trial_names'] = deleted_trial_names
@@ -255,7 +235,7 @@ def logging():
     Handlers requests for the logging tab
     """
     recording_flag = db.get('recording_flag')
-    kwargs = dict(BASE_KWARGS)
+    kwargs = dict(form_tools.get_base_kwargs())
     kwargs['current_tab'] = config.tab_dict['logging']['tab']
     log_values = db_tools.get_dict(db,'log_values')
 
@@ -294,7 +274,7 @@ def info():
     """
     Handles requests for info tab 
     """
-    kwargs = dict(BASE_KWARGS)
+    kwargs = dict(form_tools.get_base_kwargs())
     kwargs['current_tab'] = config.tab_dict['info']['tab'] 
     uname = os.uname()
 
@@ -334,7 +314,7 @@ def docs():
     """
     Handles requests for the docs (or Manual) tab.
     """
-    kwargs = dict(BASE_KWARGS)
+    kwargs = dict(form_tools.get_base_kwargs())
     kwargs['current_tab'] = config.tab_dict['docs']['tab'] 
     return flask.render_template('docs.html',**kwargs)
 

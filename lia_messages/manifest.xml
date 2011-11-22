@@ -1,0 +1,15 @@
+<package>
+  <description brief="lia_messages">
+
+     lia_messages
+
+  </description>
+  <author>Will Dickson</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/lia_messages</url>
+  <depend package="rospy"/>
+
+</package>
+
+

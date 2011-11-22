@@ -1,0 +1,22 @@
+{% macro show_trial(trial_display) %}
+    <table>
+    {% for item in trial_display %}
+        <tr>
+            <td  class="{{item['class']}}"> {{item['name']}} </td>  
+            <td id="{{item['name'].replace(' ', '_')}}_value" class="{{item['class']}}" > {{item['value']}} </td>
+            <td id="{{item['name'].replace(' ', '_')}}_units" class="{{item['class']}}" > {{item['units']}} </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endmacro %}
+
+{% macro show_log(log_display) %}
+    <table>
+    {% for item in log_display %}
+        <tr>
+            <td class="{{item['class']}}"> {{item['name']}} </td>  
+            <td id="{{item['name'].replace(' ','_')}}" class="{{item['class']}}"> {{item['value']}} </td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endmacro %}

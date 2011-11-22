@@ -1,0 +1,46 @@
+{% import "displays.html" as displays %}
+
+{% macro trial_settings(flags, trial_display, trial_saved_name,loaded_trial_name, deleted_trial_names) %}
+    {% if flags['no_save_name'] %}
+        <br>
+        <p class="warning"> Unable to save trial values - name is empty </p>
+    {% endif %}
+    
+    {%if flags['trial_name_exists'] %}
+        <br>
+        <p class="warning"> Unable to save trial values - a saved trial with this name already exists </p>
+    {% endif %}
+    
+    {% if flags['trial_saved'] %}
+        <br>
+        <p> <strong> Trial Saved, Name: {{saved_trial_name}} </strong> </p>
+    {% endif %}
+    
+    {% if deleted_trial_names %}
+        <br>
+        {% if deleted_trial_names|length == 1 %}
+            <p> <strong> Deleted Trial: </strong>  {{deleted_trial_names[0]}} </p>
+        {% else %}
+            <p> <strong> Deleted Trials: </strong> </p>
+            {% for name in deleted_trial_names %}
+                {{name}} <br>
+            {% endfor %}
+        {% endif %}
+    {% endif %}
+    
+    {% if loaded_trial_name %}
+        <br><br>
+        <strong> Loaded Trial: </strong> {{loaded_trial_name}} 
+        <br> <br>
+    {% endif %}
+    
+    {% if flags['values_set'] %}
+        <br> <br>
+        <strong> Values Set To: </strong> 
+        <br><br>
+    {% endif %}
+    
+    {% if flags['values_set'] or loaded_trial_name %}
+        {{ displays.show_trial(trial_display) }}
+    {% endif %}
+{% endmacro %}

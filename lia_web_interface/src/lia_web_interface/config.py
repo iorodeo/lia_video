@@ -6,7 +6,6 @@ roslib.load_manifest('lia_web_interface')
 from lia_config import *
 import os
 
-# User interface -----------------------------------------------------
 page_header = 'LIA - Video Acquisition System'
 
 tab_dict = {
@@ -38,23 +37,97 @@ tab_dict = {
 
 tab_order = ['capture', 'fullsize_view', 'trial_settings', 'logging', 'info','docs']
 
-trial_values_default = {
-        'recording_duration' : (0,10,0),
-        'pulse_start_time'   : (0,3,0),
-        'pulse_period'       : (0,1,0),
-        'pulse_high_time'    : (0,0,30),
-        'number_of_pulses'   : 2,
-        'pulse_power'        : 50,
-        }
+time_units = 'hr:min:sec'
 
-log_values_default = {
-        'data_directory'       : os.path.join(os.environ['HOME'],'lia_data'),
-        'movie_file'           : 'default.avi',
-        'overwrite'            : 'yes',
-        'append_datetime'      : 'yes',
-        'settings_file_suffix' : '_settings',
-        'timing_file_suffix'   : '_timing',
-        }
+trial_values_info = [ 
+        {
+            'name'      : 'Recording Duration', 
+            'tag'       : 'recording_duration', 
+            'value'     : (0,10,0), 
+            'units'     : time_units,
+            'type'      : 'time',
+            },
+        {   
+            'name'      : 'Pulse Start Time',
+            'tag'       : 'pulse_start_time',
+            'value'     : (0,3,0), 
+            'units'     : time_units,
+            'type'      : 'time',
+            },
+        {
+            'name'      : 'Pulse High Time',
+            'tag'       : 'pulse_high_time',
+            'value'     : (0,1,0), 
+            'units'     : time_units,
+            'type'      : 'time',
+            },
+        {
+            'name'      : 'Pulse Period',
+            'tag'       : 'pulse_period',
+            'value'     : (0,0,30), 
+            'units'     : time_units,
+            'type'      : 'time',
+            },
+        {
+            'name'       : 'Number of Pulses',
+            'tag'        : 'number_of_pulses',
+            'value'      : 2,
+            'units'      : '',
+            'type'      : 'number',
+            },
+        {
+            'name'      : 'Pulse Power',
+            'tag'       : 'pulse_power',
+            'value'     : 25,
+            'units'     : '%',
+            'type'      : 'number'
+            },
+        ]
+
+log_values_info = [ 
+        {
+            'name': 'Data Directory',
+            'tag': 'data_directory',
+            'value': os.path.join(os.environ['HOME'],'lia_data'),
+            'type': 'string_readonly',
+            'comment': '',
+            },
+        { 
+            'name': 'Movie File', 
+            'tag': 'movie_file',
+            'value': 'default.avi', 
+            'type': 'string',
+            'comment': '(.avi) extension added automatically',
+            },
+        {
+            'name': 'Overwrite',
+            'tag': 'overwrite',
+            'value': 'yes',
+            'type': 'checkbox',
+            'comment': '',
+            },
+        {
+            'name': 'Append Datetime',
+            'tag': 'append_datetime',
+            'value': 'yes', 
+            'type': 'checkbox',
+            'comment': '',
+            },
+        {
+            'name': 'Settings File Suffix',
+            'tag': 'settings_file_suffix',
+            'value': '_settings', 
+            'type': 'string_readonly',
+            'comment': '', 
+            },
+        {
+            'name': 'Timing File Suffix',
+            'tag': 'timing_file_suffix',
+            'value': '_timing', 
+            'type': 'string_readonly',
+            },
+
+        ]
 
 # Image sizes for different views
 fullsize_tab_image = {
@@ -69,6 +142,7 @@ capture_tab_image = {
 
 # Fullsize tab scale options
 fullsize_scale_options = [str(0.1*x) for x in range(10,0,-1)]
+
 
 
 

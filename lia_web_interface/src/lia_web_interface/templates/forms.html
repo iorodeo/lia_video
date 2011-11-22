@@ -1,0 +1,160 @@
+{% macro input_trial(trial_display,time_labels) %} 
+    <form name="trial_settings_form" method="post">
+        <table>
+    
+            <! -- Loop over trial elements to create display -->
+            {% for item in trial_display %}
+    
+                <!--  Time entries -->
+                {% if item['type'] == "time" %}
+                    <tr>
+                        <td class="{{item['class']}}"> {{item['name']}} </td> 
+                        {% for i,label in time_labels %}
+                            <td class="{{item['class']}}">  
+                                <input 
+                                    {{disabled}} 
+                                    id="{{item['tag']}}_{{label}}" 
+                                    name="{{item['tag']}}_{{label}}" 
+                                    type="text" 
+                                    onKeyPress="return numbersonly(this,event)" 
+                                    size="3" 
+                                    value={{item['value_num'][i]}} 
+                                />  
+                            </td>
+                        {% endfor %}
+    
+                        <td class="{{item['class']}}"> 
+                            {{item['units']}}
+                        </td>
+                    </tr>
+    
+                <!-- Single number entries -->
+                {% elif item['type'] == "number" %}
+                    <tr>
+                        <td class="{{item['class']}}"> {{item['name']}} </td>
+                        <td class="{{item['class']}}">
+                            <input 
+                            {{disabled}}
+                            id="{{item['tag']}}" 
+                            name="{{item['tag']}}"  
+                            type="text" 
+                            onKeyPress="return numbersonly(this,event)" 
+                            size="3"
+                            value={{item['value_num']}} 
+                            />  
+                        </td>
+                        <td class="{{item['class']}}"> 
+                            {{item['units']}}
+                        </td>
+                        <td class="{{item['class']}}" > </td>
+                        <td class="{{item['class']}}" > </td> 
+                    </tr>
+    
+                {% endif %}
+    
+            {% endfor %}
+    
+        </table>
+        <br>
+        <button {{disabled}} type="submit" id="set_values" name="set_values"> Update Values</button> 
+        &nbsp;&nbsp;
+        <button {{disabled}} type="submit" id="save_values" name="save_values"  > Save Values As </button>
+        <input id="save_name" name="save_name" {{disabled}} type="text" size=57 onkeypress="click_save_values(event);" /> 
+    </form>
+{% endmacro %}
+
+{% macro input_log(log_display) %}
+    <form name="trial_settings_form" method="post">
+        <table>
+            {% for item in log_display %}
+                <tr>
+                    <td class={{item['class']}}> {{item['name']}} </td>
+                    <td class={{item['class']}}>
+                        {% if item['type'] == 'string_readonly' %}
+                                {{item['value']}}
+                        {% elif item['type']=='string' %}
+                                <input name={{item['tag']}} {{disabled}} type="text" size="65" value={{item['value']}} />
+                        {% elif item['type']=='checkbox' %}
+                            {% if item['value'] == 'yes' %}
+                                <input name={{item['tag']}} {{disabled}} type="checkbox" checked />
+                            {% else %}
+                                <input name={{item['tag']}} {{disabled}} type="checkbox"/>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td class={{item['class']}} > {{item['comment']}}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <button {{disabled}} type="submit" name="set_values"> Update Values</button> 
+    </form>
+{% endmacro %}
+
+{% macro saved_trials(saved_trials_display) %}
+    {% if saved_trials_display %}
+        <form name="saved_trials" method="post"> 
+            {% for name, tag, display, color in saved_trials_display %}
+                <table class="{{color}}">
+                    <tr>
+                        <td style="text-align:left"> 
+                            <input class="saved_trial_checkbox" type="checkbox" name="checkbox_{{tag}}" ></input>
+                        </td> 
+                        <td>
+                            Name: {{name}} 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td>
+                            {% for item in display %}
+                                {{item['name']}}={{item['value']}}, &nbsp;
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td>
+                            <button type="submit" name="load_{{tag}}">   Load   </button> 
+                            <button type="submit" name="delete_{{tag}}"> Delete </button> 
+                        </td>
+                    </tr>
+                </table>
+            {% endfor %}
+            <br>
+            <br>
+            <button name="select_all_trials" onclick="check_all_by_class('saved_trial_checkbox'); return false;";> Select All </button>
+            <button name="clear_all_trials" onclick="clear_all_by_class('saved_trial_checkbox'); return false;"> Clear All</button>
+            &nbsp;&nbsp;
+            <button type="submit" name="delete_selected_trials"> Delect Selected Trials</button>
+        </form>
+    {% else %}
+        No saved trials
+    {% endif %}
+{% endmacro %}
+
+{% macro existing_avi(avi_display) %}
+    <form name=select_movies method="post">
+        <table>
+            <tr> 
+                <th> </th>
+                <th style="text-align:left"> Name </th> 
+                <th style="text-align:left"> Time (last modified) </th>
+                <th style="text-align:left"> Size (MB) </th>
+            </tr>
+            {% for name, size, mtime, color in avi_display %}
+            <tr>
+                <td class="{{color}}"> <input class="movie_checkbox" type="checkbox" name="{{name}}">  </input> </td>
+                <td class="{{color}}"> {{name}} </td> 
+                <td class="{{color}}"> {{mtime}} </td>
+                <td class="{{color}}" style="text-align:right"> {{size}} </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <button  name="select_all_files" onclick="check_all_by_class('movie_checkbox'); return false;"> Select All </button>
+        <button  name="clear_all_files" onclick="clear_all_by_class('movie_checkbox'); return false;"> Clear All </button>
+        &nbsp;&nbsp;
+        <button type="submit" name="delete_selected_files"> Delect Selected Files</button>
+    </form>
+{% endmacro %}

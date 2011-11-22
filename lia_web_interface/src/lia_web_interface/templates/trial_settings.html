@@ -1,4 +1,7 @@
 {% extends "settings.html" %}
+{% import "forms.html" as forms %}
+{% import "displays.html" as displays %}
+{% import "request_messages.html" as request_messages %}
 
 {% block head %}
 {{ super() }}
@@ -15,168 +18,29 @@
 {% block body %}
 {{ super() }}
 
+{# Trial values input form #} 
 <br>
 <strong> Trial Settings </strong> 
 <br>
 <br>
-<form name="trial_settings_form" method="post">
-    <table>
+{{ forms.input_trial(trial_display,time_labels) }}
 
-        <! -- Loop over trial elements to create display -->
-        {% for item in trial_display %}
+{#- Messages in response to requests #} 
+{{ request_messages.trial_settings( 
+    flags, 
+    trial_display,
+    trial_saved_name, 
+    loaded_trial_name, 
+    deleted_trial_names) 
+}}
 
-            <!--  Time entries -->
-            {% if item['type'] == "time" %}
-                <tr>
-                    <td class={{item['class']}}> {{item['name']}} </td> 
-                    {% for i,label in time_labels %}
-                        <td class={{item['class']}}>  
-                            <input 
-                                {{disabled}} 
-                                id="{{item['tag']}}_{{label}}" 
-                                name="{{item['tag']}}_{{label}}" 
-                                type="text" 
-                                onKeyPress="return numbersonly(this,event)" 
-                                size="10" 
-                                value={{item['value_num'][i]}} 
-                            />  
-                        </td>
-                    {% endfor %}
-
-                    <td class="{{item['class']}}"> 
-                        {{item['units']}}
-                    </td>
-                </tr>
-
-            <!-- Single number entries -->
-            {% elif item['type'] == "number" %}
-                <tr>
-                    <td class="{{item['class']}}"> {{item['name']}} </td>
-                    <td class="{{item['class']}}">
-                        <input 
-                        {{disabled}}
-                        id="{{item['tag']}}" 
-                        name="{{item['tag']}}"  
-                        type="text" 
-                        onKeyPress="return numbersonly(this,event)" 
-                        size="10"
-                        value={{item['value_num']}} 
-                        />  
-                    </td>
-                    <td class="{{item['class']}}"> 
-                        {{item['units']}}
-                    </td>
-                    <td class="{{item['class']}}" > </td>
-                    <td class="{{item['class']}}" > </td> 
-                </tr>
-
-            {% endif %}
-
-        {% endfor %}
-
-    </table>
-    <br>
-    <button {{disabled}} type="submit" id="set_values" name="set_values"> Update Values</button> 
-    &nbsp;&nbsp;
-    <button {{disabled}} type="submit" id="save_values" name="save_values"  > Save Values As </button>
-    <input id="save_name" name="save_name" {{disabled}} type="text" size=57 onkeypress="click_save_values(event);" /> 
-</form>
-
-<!-- Messages in response to requests -->
-{% if no_save_name_flag %}
-    <p class="warning"> Unable to save trial values - name is empty </p>
-{% endif %}
-
-{%if trial_name_exists_flag %}
-    <p class="warning"> Unable to save trial values - a saved trial with this name already exists </p>
-{% endif %}
-
-{% if trial_saved_flag %}
-    <br>
-    <p> <strong> Trial Saved, Name: {{saved_trial_name}} </strong> </p>
-{% endif %}
-
-{% if deleted_trial_names %}
-    <br>
-    {% if deleted_trial_names|length == 1 %}
-        <p> <strong> Deleted Trial: </strong>  {{deleted_trial_names[0]}} </p>
-    {% else %}
-        <p> <strong> Deleted Trials: </strong> </p>
-        {% for name in deleted_trial_names %}
-            {{name}} <br>
-        {% endfor %}
-    {% endif %}
-{% endif %}
-
-{% if loaded_trial_name %}
-    <br><br>
-    <strong> Loaded Trial: </strong> {{loaded_trial_name}} 
-    <br> <br>
-{% endif %}
-
-{% if values_set_flag %}
-    <br> <br>
-    <strong> Values Set To: </strong> 
-    <br><br>
-{% endif %}
-{% if values_set_flag or loaded_trial_name %}
-    <table>
-    {% for item in trial_display %}
-        <tr>
-            <td class="{{item['class']}}"> {{item['name']}} </td>  
-            <td class="{{item['class']}}"> {{item['value']}} </td>
-            <td class="{{item['class']}}"> {{item['units']}} </td>
-        </tr>
-    {% endfor %}
-    </table>
-{% endif %}
-
-<!-- Saved Trials Display -->
+{# Saved Trials Display #} 
 <br> <br>
 <strong> Saved Trial Values: </strong>
 <hr/>
 <br>
 <br>
-
-{% if saved_trials_display %}
-    <form name="saved_trials" method="post"> 
-        {% for name, tag, display, color in saved_trials_display %}
-            <table class="{{color}}">
-                <tr>
-                    <td style="text-align:left"> 
-                        <input class="saved_trial_checkbox" type="checkbox" name="checkbox_{{tag}}" ></input>
-                    </td> 
-                    <td>
-                        Name: {{name}} 
-                    </td>
-                </tr>
-                <tr>
-                    <td> </td>
-                    <td>
-                        {% for item in display %}
-                            {{item['name']}}={{item['value']}}, &nbsp;
-                        {% endfor %}
-                    </td>
-                </tr>
-                <tr>
-                    <td> </td>
-                    <td>
-                        <button type="submit" name="load_{{tag}}">   Load   </button> 
-                        <button type="submit" name="delete_{{tag}}"> Delete </button> 
-                    </td>
-                </tr>
-            </table>
-        {% endfor %}
-        <br>
-        <br>
-        <button name="select_all_trials" onclick="check_all_by_class('saved_trial_checkbox'); return false;";> Select All </button>
-        <button name="clear_all_trials" onclick="clear_all_by_class('saved_trial_checkbox'); return false;"> Clear All</button>
-        &nbsp;&nbsp;
-        <button type="submit" name="delete_selected_trials"> Delect Selected Trials</button>
-    </form>
-{% else %}
-    No saved trials
-{% endif %}
+{{forms.saved_trials(saved_trials_display)}}
 <br>
 <br>
 {% endblock %}

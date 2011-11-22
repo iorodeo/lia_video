@@ -1,6 +1,7 @@
 import math
-import config
 import os.path
+import config
+import iface_tools
 
 def update_trial_values(trial_values, form):
     """ 
@@ -119,5 +120,30 @@ def find_all_prefix_match(prefix,data):
             pass
     return matching
 
+def get_base_kwargs():
+    """
+    Basic set of keyword consants for use in calls to render_template
+    Counld move these to the database .... 
+    """
+    # Get hostaddr use ip address if possible
+    try:
+        hostaddr= iface_tools.get_ip_addr('eth0')
+    except KeyError, NameError:
+        print 'unable to get ip - using localhost'
+        hostaddr = 'localhost'
 
+    base_kwargs = {
+            'page_header': config.page_header,
+            'tab_dict': config.tab_dict,
+            'tab_order': config.tab_order,
+            'camera_topic': config.camera_topic,
+            'progress_bar_topic': config.progress_bar_topic,
+            'progress_message_topic': config.progress_message_topic,
+            'capture_tab_image': config.capture_tab_image,
+            'fullsize_tab_image': config.fullsize_tab_image,
+            'camera_mjpeg_port': config.camera_mjpeg_port,
+            'progress_mjpeg_port': config.progress_mjpeg_port,
+            'hostaddr': hostaddr,
+            }
+    return base_kwargs
 

@@ -1,88 +1,29 @@
 {% extends "settings.html" %}
+{% import "forms.html" as forms %}
+{% import "displays.html" as displays %}
+
 {% block head %}
 {{ super() }}
-
 
 {% endblock %}
 {% block body%}
 {{ super() }}
 
+{# Show form changing log settings #}
 <br>
 <strong> Log Settings </strong> <br>
 <br>
-<form name="trial_settings_form" method="post">
-    <table>
-        <tr>
-            <td class="c2"> Data Directory </td> 
-            <td class="c2"> {{data_directory}} </td>
-            <td class="c2"> </td>
-        </tr>
-        <tr>
-            <td class="c1"> Movie File: </td> 
-            <td class="c1"> <input name="movie_file" {{disabled}} type="text" size="65" value={{movie_file}} /> (.avi) </td>
-            <td class="c1"> extension added automatically </td>
-        </tr>
-        <tr>
-            <td class="c2"> Overwrite </td>
-            
-            <td class="c2"> 
-                {% if overwrite == 'yes' %}
-                     <input name="overwrite" {{disabled}} type="checkbox" checked />
-                {% else %}
-                     <input name="overwrite" {{disabled}} type="checkbox"/> 
-                {% endif %}
-            </td>
-            <td class="c2"> </td>
-        </tr>
-        <tr>
-            <td class="c1"> Append Datetime </td>
-            <td class="c1"> 
-                {% if append_datetime == 'yes' %}
-                    <input name="append_datetime" {{disabled}} type="checkbox" checked /> 
-                {% else %}
-                    <input name="append_datetime" {{disabled}} type="checkbox" /> 
-                {% endif %}
-            </td>
-            <td class="c1"> </td>
-        </tr>
-        <tr>
-            <td class="c2">
-                Settings File Suffix
-            </td>
-            <td class="c2">
-                {{settings_file_suffix}}
-            </td>
-            <td class="c2"></td>
-        </tr>
-        <tr>
-            <td class="c1">
-                Timing File Suffix
-            </td>
-            <td class="c1">
-                {{timing_file_suffix}}
-            </td>
-            <td class="c1"></td>
-        </tr>
-    </table>
-    <br>
-    <button {{disabled}} type="submit" name="set_values"> Update Values</button> 
-</form>
+{{ forms.input_log(log_display) }}
 
 {% if set_values_flag %}
     <br>
     <br>
     <strong> Values Set To: </strong> 
     <br><br>
-    <table>
-    {% for item in log_display %}
-        <tr>
-            <td class="{{item['class']}}"> {{item['name']}} </td>  
-            <td class="{{item['class']}}"> {{item['value']}} </td>
-        </tr>
-    {% endfor %}
-    </table>
+    {{ displays.show_log(log_display) }}
 {% endif %}
 
+{# Show any request messages #}
 {% if deleted_avi_files %}
 <br>
 <br>
@@ -94,35 +35,13 @@
 {% endfor %}
 {% endif %}
 
+{# Display existing avi files form #}
 <br><br>
 <strong> Existing Movie Files: </strong> 
 <hr/>
 <br><br>
 {% if avi_display %}
-    <form name=select_movies method="post">
-        <table>
-            <tr> 
-                <th> </th>
-                <th style="text-align:left"> Name </th> 
-                <th style="text-align:left"> Time (last modified) </th>
-                <th style="text-align:left"> Size (MB) </th>
-            </tr>
-            {% for name, size, mtime, color in avi_display %}
-            <tr>
-                <td class="{{color}}"> <input class="movie_checkbox" type="checkbox" name="{{name}}">  </input> </td>
-                <td class="{{color}}"> {{name}} </td> 
-                <td class="{{color}}"> {{mtime}} </td>
-                <td class="{{color}}" style="text-align:right"> {{size}} </td>
-            </tr>
-            {% endfor %}
-        </table>
-        <br>
-        <button  name="select_all_files" onclick="check_all_by_class('movie_checkbox'); return false;"> Select All </button>
-        <button  name="clear_all_files" onclick="clear_all_by_class('movie_checkbox'); return false;"> Clear All </button>
-        &nbsp;&nbsp;
-        <button type="submit" name="delete_selected_files"> Delect Selected Files</button>
-
-    </form>
+    {{ forms.existing_avi(avi_display) }}
 {% else %}
     Data directory empty
 {% endif %}
