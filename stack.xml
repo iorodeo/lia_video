@@ -1,0 +1,12 @@
+<stack>
+  <description brief="lia_video">lia_video</description>
+  <author>Maintained by Will Dickson</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/lia_video</url>
+  <depend stack="common_msgs" /> <!-- sensor_msgs -->
+  <depend stack="ros" />
+  <depend stack="ros_comm" /> <!-- rospy -->
+  <depend stack="vision_opencv" /> <!-- opencv2, cv_bridge -->
+
+</stack>
