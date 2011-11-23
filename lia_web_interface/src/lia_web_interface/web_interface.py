@@ -68,9 +68,9 @@ def index():
 def login():
     error = None
     if flask.request.method == 'POST':
-        if flask.request.form['username'] != 'admin':
+        if flask.request.form['username'] != config.username: 
             error = 'Invalid username'
-        elif flask.request.form['password'] != 'test':
+        elif flask.request.form['password'] != config.password:
             error = 'Invalid password'
         else:
             flask.session['logged_in'] = True

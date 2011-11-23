@@ -143,6 +143,10 @@ capture_tab_image = {
 # Fullsize tab scale options
 fullsize_scale_options = [str(0.1*x) for x in range(10,0,-1)]
 
+# For development only
+username = 'admin'
+password = 't3st'
+
 
 
 
