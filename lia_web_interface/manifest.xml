@@ -5,7 +5,7 @@
 
   </description>
   <author>Will Dickson</author>
-  <license>BSD</license>
+  <license>Apache V2.0</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/web_interface</url>
   <depend package="rospy"/>

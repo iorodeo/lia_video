@@ -1,7 +1,7 @@
 <stack>
   <description brief="lia_video">lia_video</description>
   <author>Maintained by Will Dickson</author>
-  <license>BSD</license>  
+  <license>Apache V2.0</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/lia_video</url>
   <depend stack="common_msgs" /> <!-- sensor_msgs -->
