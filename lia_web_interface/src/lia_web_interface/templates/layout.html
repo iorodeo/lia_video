@@ -1,8 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-
-<!doctype html>
-
+<html>
     <head>
         {% block head %}
 
@@ -14,22 +10,6 @@
         {% endblock %}
     </head>
 
-    <body id="{{current_tab}}">
-
-        {% block body %}
-
-        <h1 class="header">{{page_header}}</h1> 
-
-        <ul id="tabnav">
-            {% for k in tab_order %}
-            <li class="{{tab_dict[k]['tab']}}"><a href="{{url_for(k)}}">{{tab_dict[k]['label']}} </a></li>
-            {% endfor %}
-        </ul>
-
-        {% endblock %}
-
-        <div class="footer">
-        </div>
-
-    </body>
+    {% block body %}
+    {% endblock %}
 </html>

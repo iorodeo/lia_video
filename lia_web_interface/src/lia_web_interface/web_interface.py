@@ -26,6 +26,7 @@ import time_tools
 import file_tools
 import form_tools
 import config_tools
+import user_tools
 
 import roslib
 roslib.load_manifest('lia_web_interface')
@@ -47,6 +48,9 @@ file_tools.check_dir(log_values['data_directory'])
 app.config["SIJAX_STATIC_PATH"] = os.path.join('.', os.path.dirname(__file__), 'static/js/sijax/')
 app.config["SIJAX_JSON_URI"] = os.path.join('.',os.path.dirname(__file__), 'static/json2.js') 
 
+# Add secret key - not so secrete really
+app.config['SECRET_KEY'] = 'development key' 
+
 # Setup sijax
 flaskext.sijax.init_sijax(app)
 
@@ -55,9 +59,35 @@ flaskext.sijax.init_sijax(app)
 
 @app.route('/')
 def index():
-    return flask.redirect(flask.url_for('capture'))
+    if not flask.session.get('logged_in'):
+        return flask.redirect(flask.url_for('login'))
+    else:
+        return flask.redirect(flask.url_for('capture'))
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    error = None
+    if flask.request.method == 'POST':
+        if flask.request.form['username'] != 'admin':
+            error = 'Invalid username'
+        elif flask.request.form['password'] != 'test':
+            error = 'Invalid password'
+        else:
+            flask.session['logged_in'] = True
+            flask.flash('You were logged in')
+            return flask.redirect(flask.url_for('capture'))
+    kwargs = dict(form_tools.get_base_kwargs())
+    kwargs['error'] = error
+    return flask.render_template('user_login.html', **kwargs)
+
+@app.route('/logout')
+def logout():
+    flask.session.pop('logged_in', None)
+    flask.flash('You were logged out')
+    return flask.redirect(flask.url_for('index'))
 
 @flaskext.sijax.route(app, '/capture', methods=['GET','POST'])
+@user_tools.check_login
 def capture():
     """
     Handles requests for the capture control tab. Note, sijax is used to handle
@@ -87,6 +117,7 @@ def capture():
         return flask.render_template('capture.html',**kwargs)
 
 @app.route('/fullsize_view', methods=['GET'])
+@user_tools.check_login
 def fullsize_view():
     """
     Handles requests for the fullsize view page
@@ -115,6 +146,7 @@ def fullsize_view():
     return flask.render_template('fullsize_view.html',**kwargs)
 
 @app.route('/trial_settings',methods=['GET','POST'])
+@user_tools.check_login
 def trial_settings():
     """
     Handles request for the trial settings tab.
@@ -231,6 +263,7 @@ def trial_settings():
     return flask.render_template('trial_settings.html',**kwargs)
 
 @app.route('/logging', methods=['GET','POST'])
+@user_tools.check_login
 def logging():
     """
     Handlers requests for the logging tab
@@ -271,6 +304,7 @@ def logging():
     return flask.render_template('logging.html', **kwargs)
 
 @app.route('/info')
+@user_tools.check_login
 def info():
     """
     Handles requests for info tab 
@@ -311,6 +345,7 @@ def info():
     return flask.render_template('info.html',**kwargs)
 
 @app.route('/docs')
+@user_tools.check_login
 def docs():
     """
     Handles requests for the docs (or Manual) tab.
@@ -321,7 +356,10 @@ def docs():
 
 def cleanup():
     for k in db.keys('*'):
-        db.delete(k)
+        if not str(k)=='saved_trials':
+            db.delete(k)
+    db.save()
+
 atexit.register(cleanup)
 
 

@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block body%}
+    <body id="{{current_tab}}">
+
+        <h1 class="header">{{page_header}}</h1> 
+        <div style="text-align:right;">
+            <a href="{{url_for('logout')}}" style="text-align:right;"> logout</a>
+        </div>
+
+        <ul id="tabnav">
+            {% for k in tab_order %}
+            <li class="{{tab_dict[k]['tab']}}"><a href="{{url_for(k)}}">{{tab_dict[k]['label']}} </a></li>
+            {% endfor %}
+        </ul>
+
+    </body>
+{% endblock %}
