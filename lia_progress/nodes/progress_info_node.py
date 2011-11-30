@@ -4,6 +4,7 @@ roslib.load_manifest('lia_progress')
 import rospy
 import cv
 import math
+import os.path
 
 import Image as PILImage
 import ImageDraw as PILImageDraw
@@ -18,10 +19,11 @@ class Progress_Info(object):
 
     def __init__(self):
         self.bridge = CvBridge()
-        self.font = PILImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", 20)
+        file_dir, file_name = os.path.split(__file__)
+        font_path = '%s/../fonts/FreeMono.ttf'%(file_dir,)
+        self.font = PILImageFont.truetype(font_path, 20)
         self.fill = (0,0,0)
         rospy.init_node('progress_info')
-
         self.pub = rospy.Publisher('image_progress_message', Image)
         self.sub = rospy.Subscriber('progress',ProgressMsg, self.handle_progress_msg)
 

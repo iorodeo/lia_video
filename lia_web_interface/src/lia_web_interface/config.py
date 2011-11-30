@@ -76,10 +76,10 @@ trial_values_info = [
             'type'      : 'number',
             },
         {
-            'name'      : 'Pulse Power',
-            'tag'       : 'pulse_power',
-            'value'     : 25,
-            'units'     : '%',
+            'name'      : 'Pulse Current',
+            'tag'       : 'pulse_current',
+            'value'     : 100,
+            'units'     : 'mA',
             'type'      : 'number'
             },
         ]

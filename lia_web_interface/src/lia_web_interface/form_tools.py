@@ -12,18 +12,18 @@ def update_trial_values(trial_values, form):
     pulse_start_time = get_time_values('pulse_start_time',form)
     pulse_period = get_time_values('pulse_period',form)
     pulse_high_time = get_time_values('pulse_high_time',form)
-    pulse_power = int(form['pulse_power'])
+    pulse_current = int(form['pulse_current'])
 
     # Clamp power value at 100%
-    if pulse_power > 100:
-        pulse_power = 100
+    if pulse_current > 1000:
+        pulse_current = 1000 
 
     # Update trial values, data base and set flag
     trial_values['recording_duration'] = recording_duration 
     trial_values['number_of_pulses'] = number_of_pulses
     trial_values['pulse_start_time'] = pulse_start_time
     trial_values['pulse_high_time'] = pulse_high_time
-    trial_values['pulse_power'] = pulse_power
+    trial_values['pulse_current'] = pulse_current
     trial_values['pulse_period'] = pulse_period
     return trial_values
 
