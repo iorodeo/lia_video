@@ -1,0 +1,5 @@
+string channel
+string state
+int32 value
+---
+bool flag

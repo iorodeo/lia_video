@@ -1,0 +1,16 @@
+<package>
+  <description brief="lia_current_controller">
+
+     lia_current_controller
+
+  </description>
+  <author>Will Dickson</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/lia_current_controller</url>
+  <depend package="rospy"/>
+  <depend package="lia_services"/>
+
+</package>
+
+

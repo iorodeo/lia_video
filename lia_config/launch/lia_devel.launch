@@ -1,0 +1,81 @@
+<!-- Main ROS launch file for the lia video acquisition system. -->
+
+<launch>
+  
+  <!-- Define names for image throttling topics -->
+  <arg name="lia_image_throttle"  value="/camera/image_throttle"/>
+  <arg name="lia_progress_bar_throttle" value="/image_progress_bar_throttle" />
+  <arg name="lia_progress_message_throttle" value="/image_progress_message_throttle"/>
+  <arg name="lia_fps_info_throttle" value="/image_fps_throttle"/>
+
+  <param name="lia_image_throttle"  value="$(arg lia_image_throttle)"/>
+  <param name="lia_progress_bar_throttle" value="$(arg lia_progress_bar_throttle"/>
+  <param name="lia_progress_message_throttle" value="$(arg lia_progress_message_throttle"/>
+  <param name="lia_fps_info_throttle" value="(arg lia_fps_info_throttle"/>
+
+  <!-- Camera acquisition node -->
+  <node pkg="camera1394" type="camera1394_node" name="camera1394_node" >
+    <rosparam file="$(find lia_config)/launch/camera_config.yaml"/>
+  </node>
+
+  <!-- AVI writer node -->
+  <!-- <node pkg="lia_avi_writer" type="lia_avi_writer.py" name="avi_writer" args="/camera/image_raw"/> -->
+
+  <!-- FPS monitor node -->
+  <node pkg="lia_fps_monitor" type="fps_node.py" name="fps_monitor" args="/camera/camera_info"/>
+
+  <!-- Progress bar and progress info nodes -->
+  <node pkg="lia_progress" type="progress_bar_node.py" name="progress_bar"/>
+  <node pkg="lia_progress" type="progress_info_node.py" name="progress_info"/>
+
+  <!-- FPS image node -->
+  <node pkg="lia_fps_monitor" type="fps_image_node.py" name="fps_info_image"/>
+
+  <!-- Image throttling nodes - for previewing -->
+  <node 
+      pkg="topic_tools" 
+      type="throttle" 
+      name="camera_throttler" 
+      args="messages /camera/image_raw 10.0 $(arg lia_image_throttle)" 
+      />
+
+  <node 
+      pkg="topic_tools" 
+      type="throttle" 
+      name="progress_bar_throttler" 
+      args="messages /image_progress_bar 10.0 $(arg lia_progress_bar_throttle)" 
+      />
+
+  <node 
+      pkg="topic_tools" 
+      type="throttle" 
+      name="progress_message_throttler" 
+      args="messages /image_progress_message 10.0 $(arg lia_progress_message_throttle)" 
+      />
+
+  <node 
+      pkg="topic_tools"
+      type="throttle"
+      name="fps_info_throttler"
+      args="messages /image_fps message 10.0 $(arg lia_fps_info_throttle)"
+      />
+
+  <!-- MJPEG server for camera images -->
+  <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server_camera" >
+    <param name="port" value="8080"/>
+  </node>
+
+  <!-- MJPEG server for progress images -->
+  <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server_progress" >
+    <param name="port" value="8181"/>
+  </node>
+
+  <!-- MJPEG server for fps info -->
+  <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server_fps" >
+    <param name="port" value="8282"/>
+  </node>
+
+  <!-- Web interface -->
+  <node pkg="lia_web_interface" type="web_interface.py" name="web_interface" args="tornado"/>
+
+</launch>

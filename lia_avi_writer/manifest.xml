@@ -15,6 +15,7 @@
   <depend package="lia_config"/>
   <depend package="lia_services"/>
   <depend package="lia_messages"/>
+  <depend package="lia_web_interface"/>
 
 </package>
 

@@ -10,6 +10,7 @@ import threading
 import math
 import redis
 import lia_config
+from lia_web_interface import db_tools
 
 # Messages
 from sensor_msgs.msg import Image
@@ -20,11 +21,16 @@ from lia_messages.msg import ProgressMsg
 # Services
 from lia_services.srv import RecordingCmd
 from lia_services.srv import RecordingCmdResponse
+from lia_services.srv import SetCurrentCmd
 
-class AVI_Writer(object):
+class LIA_AVI_Writer(object):
+    """
+    Avi writer for the light induced arousal application. 
+    """
 
     def __init__(self,topic):
 
+        # Video recording parameters
         self.topic = topic
         self.record_t = 10.0 
         self.start_t = 0.0
@@ -32,14 +38,15 @@ class AVI_Writer(object):
         self.progress_t = 0.0 
         self.frame_count = 0
         self.recording_message = 'stopped'
-
         self.frame_rate = 24.0 # This is a kludge - get from image topic
         self.writer = None 
         self.done = True 
         self.cv_image_size = None
         self.filename = os.path.join(os.environ['HOME'],'default.avi')
 
-        #self.progress_message = Progress_Message()
+        # Current pulse parameters 
+        self.pulse_channel = 'a'
+        self.pulse_controller = None
 
         self.lock = threading.Lock()
         self.redis_db = redis.Redis('localhost', db=lia_config.redis_db)
@@ -59,6 +66,10 @@ class AVI_Writer(object):
                 RecordingCmd, 
                 self.handle_recording_cmd
                 )
+
+        # Set up proxy for set current service
+        rospy.wait_for_service('set_current')
+        self.set_current_proxy = rospy.ServiceProxy('set_current',SetCurrentCmd)
 
     def run(self):
         rospy.spin()
@@ -95,6 +106,14 @@ class AVI_Writer(object):
                     self.done = False
                     self.recording_message = 'recording'
 
+                    # Setup pulse controller 
+                    trial_values = db_tools.get_dict(self.redis_db, 'trial_values')
+                    self.pulse_controller = Pulse_Controller(
+                            trial_values,
+                            self.pulse_channel,
+                            self.set_current_proxy,
+                            )
+
             elif command == 'stop':
                 self.done = True
                 del self.writer
@@ -128,12 +147,14 @@ class AVI_Writer(object):
             with self.lock:
                 self.frame_count += 1
                 self.progress_t = self.current_t - self.start_t
-                
+                self.pulse_controller.update(self.progress_t)
+
                 # Check to see if we are done recording - if so stop writing frames 
                 if self.current_t >= self.start_t + self.record_t:
                     self.done = True
                     del self.writer
                     self.writer = None
+                    self.pulse_controller.set_pulse_low()
                     self.recording_message = 'finished'
                     self.redis_db.set('recording_flag',0)
 
@@ -145,11 +166,45 @@ class AVI_Writer(object):
             self.progress_msg.recording_message = self.recording_message
         self.progress_pub.publish(self.progress_msg)
 
+
+
+class Pulse_Controller(object):
+
+    def __init__(self, trial_values, set_current_func, channel):
+        self.state = 'low'
+        self.count = 0
+        self.next_change_t = trial_values['pulse_start_time']
+        self.duration = trial_values['pulse_high_time']
+        self.period = trial_values['pulse_period']
+        self.set_current_func = set_current_func
+        self.channel = channel
+        self.set_pulse_low()
+
+    def set_pulse_high(self):
+        self.set_current_func(self.channel,'on',self.pulse_current)
+        self.state = 'high'
+
+    def set_pulse_low(self):
+        self.set_current_func(self.channel,'off',0)
+        self.state = 'low'
+
+    def update(self,t):
+        if self.count < self.number_of_pulses and self.t >= self.next_change_t:
+            if self.state == 'low':
+                self.set_pulse_high()
+                self.next_change_t = t+self.duration
+            elif self.state == 'high':
+                self.set_pulse_low()
+                self.next_change_t = t+self.period-self.duration
+                self.count += 1
+
+
+
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
 
     topic = sys.argv[1]
-    node = AVI_Writer(topic)
+    node = LIA_AVI_Writer(topic)
     node.run()
 
 
