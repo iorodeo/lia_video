@@ -4,6 +4,7 @@ A collection of tools useful for dealing with files and directories.
 import os
 import os.path
 import time
+import db_tools
 
 def add_datetime_suffix(filename):
     """
@@ -54,11 +55,14 @@ def get_existing_avi(data_dir,info=False):
             #avi_info_files.append(('%s.mpg'%(base,),f_size,f_time))
         return avi_info_files
 
-def delete_data_files(avi_files, data_directory):
+def delete_data_files(avi_files, log_values):
     """
     Delete avi movie files in the list as well as any associated
     files - e.g., _settings.txt and _timing.txt files.
     """
+    data_directory = log_values['data_directory']
+    settings_suffix = log_values['settings_file_suffix']
+    timing_suffix = log_values['timing_file_suffix']
     for f in avi_files:
         f_base, f_ext = os.path.splitext(f)
         if f_ext == '.avi':
@@ -67,6 +71,28 @@ def delete_data_files(avi_files, data_directory):
                 os.remove(f_path)
             except OSError:
                 pass
+            metadata_filenames = get_metadata_filenames(
+                    f,
+                    data_directory,
+                    settings_suffix,
+                    timing_suffix,
+                    )
+            settings_filename, timing_filename = metadata_filenames
+            os.remove(settings_filename)
+            os.remove(timing_filename)
+
+def get_metadata_filenames(movie_filename,data_directory,settings_suffix,timing_suffix): 
+    """
+    Get based on the name of the avi file and the suffixes defined in the
+    log_values creates the metadata file names for settings and timing.
+    """
+    movie_filename_base, movie_ext = os.path.splitext(movie_filename)
+    settings_filename = '{0}{1}.txt'.format(movie_filename_base,settings_suffix)
+    settings_filename = os.path.join(data_directory,settings_filename)
+
+    timing_filename = '{0}{1}.txt'.format(movie_filename_base,timing_suffix)
+    timing_filename = os.path.join(data_directory,timing_filename)
+    return settings_filename, timing_filename
             
 def check_dir(dirname):
     """

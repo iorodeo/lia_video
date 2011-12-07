@@ -283,7 +283,7 @@ def logging():
             set_values_flag = True
         if 'delete_selected_files' in flask.request.form:
             selected_avi_files = form_tools.get_selected_avi_files(flask.request.form)
-            file_tools.delete_data_files(selected_avi_files, log_values['data_directory'])
+            file_tools.delete_data_files(selected_avi_files, log_values)
             deleted_avi_files = selected_avi_files
 
     kwargs.update(log_values)

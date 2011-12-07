@@ -11,6 +11,7 @@ import math
 import redis
 import lia_config
 from lia_web_interface import db_tools
+from lia_web_interface import file_tools
 
 # Messages
 from sensor_msgs.msg import Image
@@ -47,6 +48,7 @@ class LIA_AVI_Writer(object):
         # Current pulse parameters 
         self.pulse_channel = 'a'
         self.pulse_controller = None
+        self.timing_fid = None
 
         self.lock = threading.Lock()
         self.redis_db = redis.Redis('localhost', db=lia_config.redis_db)
@@ -106,19 +108,34 @@ class LIA_AVI_Writer(object):
                     self.done = False
                     self.recording_message = 'recording'
 
-                    # Setup pulse controller 
+                    # Get trial values and setup pulse controller 
                     trial_values = db_tools.get_dict(self.redis_db, 'trial_values')
                     self.pulse_controller = Pulse_Controller(
                             trial_values,
                             self.pulse_channel,
                             self.set_current_proxy,
                             )
-                            
+
+                    # Write settings file and open timing file
+                    log_values = db_tools.get_dict(self.redis_db, 'log_values')
+                    data_directory = log_values['data_directory']
+                    settings_suffix = log_values['settings_file_suffix']
+                    timing_suffix = log_values['timing_file_suffix']
+                    metadata_filenames = file_tools.get_metadata_filenames(
+                            self.filename,
+                            data_directory,
+                            settings_suffix,
+                            timing_suffix,
+                            )
+                    settings_filename, timing_filename = metadata_filenames
+                    settings_fid = open(settings_filename,'w')
+                    for k,v in trial_values.iteritems():
+                        settings_fid.write('{0}: {1}\n'.format(k,v))
+                    settings_fid.close()
+                    self.timing_fid = open(timing_filename,'w')
+                   
             elif command == 'stop':
-                self.done = True
-                del self.writer
-                self.writer = None
-                self.recording_message = 'stopped'
+                self.cleanup_after_recording()
                 response = True
 
             return RecordingCmdResponse(response)
@@ -148,16 +165,11 @@ class LIA_AVI_Writer(object):
                 self.frame_count += 1
                 self.progress_t = self.current_t - self.start_t
                 self.pulse_controller.update(self.progress_t)
+                self.update_timing_file()
 
                 # Check to see if we are done recording - if so stop writing frames 
                 if self.current_t >= self.start_t + self.record_t:
-                    self.done = True
-                    del self.writer
-                    self.writer = None
-                    self.pulse_controller.set_pulse_low()
-                    self.pulse_controller.turn_off()
-                    self.recording_message = 'finished'
-                    self.redis_db.set('recording_flag',0)
+                    self.cleanup_after_recording()
 
         # Publish progress message
         with self.lock:
@@ -166,6 +178,37 @@ class LIA_AVI_Writer(object):
             self.progress_msg.progress_t = self.progress_t
             self.progress_msg.recording_message = self.recording_message
         self.progress_pub.publish(self.progress_msg)
+
+    def update_timing_file(self): 
+        """
+        Updates information in timing file - frame count, time and pulse
+        state.
+        """
+        if self.timing_fid is not None: 
+            self.timing_fid.write('{0} '.format(self.frame_count))
+            self.timing_fid.write('{0} '.format(self.progress_t))
+            if self.pulse_controller.state == 'high':
+                self.timing_fid.write('{0}\n'.format(1))
+            else:
+                self.timing_fid.write('{0}\n'.format(0))
+
+    def cleanup_after_recording(self):
+        """
+        Cleans up after recording is stopped - closes open files, turns off current
+        controller.
+
+        Should alwars be called with the lock.
+        """
+        self.done = True
+        del self.writer
+        self.writer = None
+        self.pulse_controller.set_pulse_low()
+        self.pulse_controller.turn_off()
+        self.recording_message = 'finished'
+        self.redis_db.set('recording_flag',0)
+        self.timing_fid.close()
+
+
 
 
 class Pulse_Controller(object):
@@ -184,17 +227,14 @@ class Pulse_Controller(object):
         self.next_change_time = self.pulse_start_time
 
     def set_pulse_high(self):
-        print 'set_pulse_high'
         self.set_current_func(self.channel,'on',self.pulse_current)
         self.state = 'high'
 
     def set_pulse_low(self):
-        print 'set_pulse_low'
         self.set_current_func(self.channel,'on', 0)
         self.state = 'low'
 
     def turn_off(self):
-        print 'turn off'
         self.set_current_func(self.channel,'off',0)
 
     def update(self,t):
@@ -202,12 +242,10 @@ class Pulse_Controller(object):
             if self.state == 'low':
                 self.set_pulse_high()
                 self.next_change_time += self.pulse_high_time
-                print 't = ', self.next_change_time
             elif self.state == 'high':
                 self.set_pulse_low()
                 self.count += 1
                 self.next_change_time = self.pulse_start_time + self.count*self.pulse_period
-                print 't = ', self.next_change_time
 
 
 def trial_time_to_secs(tt):
