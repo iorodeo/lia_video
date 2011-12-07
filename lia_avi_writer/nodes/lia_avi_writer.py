@@ -113,7 +113,7 @@ class LIA_AVI_Writer(object):
                             self.pulse_channel,
                             self.set_current_proxy,
                             )
-
+                            
             elif command == 'stop':
                 self.done = True
                 del self.writer
@@ -155,6 +155,7 @@ class LIA_AVI_Writer(object):
                     del self.writer
                     self.writer = None
                     self.pulse_controller.set_pulse_low()
+                    self.pulse_controller.turn_off()
                     self.recording_message = 'finished'
                     self.redis_db.set('recording_flag',0)
 
@@ -167,38 +168,50 @@ class LIA_AVI_Writer(object):
         self.progress_pub.publish(self.progress_msg)
 
 
-
 class Pulse_Controller(object):
 
-    def __init__(self, trial_values, set_current_func, channel):
+    def __init__(self, trial_values, channel, set_current_func):
         self.state = 'low'
         self.count = 0
-        self.next_change_t = trial_values['pulse_start_time']
-        self.duration = trial_values['pulse_high_time']
-        self.period = trial_values['pulse_period']
+        self.pulse_start_time = trial_time_to_secs(trial_values['pulse_start_time'])
+        self.pulse_high_time = trial_time_to_secs(trial_values['pulse_high_time'])
+        self.pulse_period = trial_time_to_secs(trial_values['pulse_period'])
+        self.number_of_pulses = trial_values['number_of_pulses']
+        self.pulse_current = trial_values['pulse_current']
         self.set_current_func = set_current_func
         self.channel = channel
         self.set_pulse_low()
+        self.next_change_time = self.pulse_start_time
 
     def set_pulse_high(self):
+        print 'set_pulse_high'
         self.set_current_func(self.channel,'on',self.pulse_current)
         self.state = 'high'
 
     def set_pulse_low(self):
-        self.set_current_func(self.channel,'off',0)
+        print 'set_pulse_low'
+        self.set_current_func(self.channel,'on', 0)
         self.state = 'low'
 
+    def turn_off(self):
+        print 'turn off'
+        self.set_current_func(self.channel,'off',0)
+
     def update(self,t):
-        if self.count < self.number_of_pulses and self.t >= self.next_change_t:
+        if self.count < self.number_of_pulses and t >= self.next_change_time:
             if self.state == 'low':
                 self.set_pulse_high()
-                self.next_change_t = t+self.duration
+                self.next_change_time += self.pulse_high_time
+                print 't = ', self.next_change_time
             elif self.state == 'high':
                 self.set_pulse_low()
-                self.next_change_t = t+self.period-self.duration
                 self.count += 1
+                self.next_change_time = self.pulse_start_time + self.count*self.pulse_period
+                print 't = ', self.next_change_time
 
 
+def trial_time_to_secs(tt):
+    return tt[0]*60*60 + tt[1]*60 + tt[2]
 
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':

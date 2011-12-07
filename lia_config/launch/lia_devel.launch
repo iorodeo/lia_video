@@ -21,6 +21,9 @@
   <!-- AVI writer node -->
   <!-- <node pkg="lia_avi_writer" type="lia_avi_writer.py" name="avi_writer" args="/camera/image_raw"/> -->
 
+  <!-- Current controller node -->
+  <node pkg="lia_current_controller" type="current_controller_node.py" name="current_controller"/>
+
   <!-- FPS monitor node -->
   <node pkg="lia_fps_monitor" type="fps_node.py" name="fps_monitor" args="/camera/camera_info"/>
 
