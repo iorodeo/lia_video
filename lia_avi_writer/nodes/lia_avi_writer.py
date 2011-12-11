@@ -188,7 +188,7 @@ class LIA_AVI_Writer(object):
             self.timing_fid.write('{0} '.format(self.frame_count))
             self.timing_fid.write('{0} '.format(self.progress_t))
             if self.pulse_controller.state == 'high':
-                self.timing_fid.write('{0}\n'.format(1))
+                self.timing_fid.write('{0}\n'.format(self.pulse_controller.pulse_current))
             else:
                 self.timing_fid.write('{0}\n'.format(0))
 
@@ -207,7 +207,6 @@ class LIA_AVI_Writer(object):
         self.recording_message = 'finished'
         self.redis_db.set('recording_flag',0)
         self.timing_fid.close()
-
 
 
 

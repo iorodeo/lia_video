@@ -18,8 +18,11 @@
     <rosparam file="$(find lia_config)/launch/camera_config.yaml"/>
   </node>
 
+  <!-- Current controller node -->
+  <node pkg="lia_current_controller" type="current_controller_node.py" name="current_controller"/>
+
   <!-- AVI writer node -->
-  <node pkg="lia_avi_writer" type="avi_writer_node.py" name="avi_writer" args="/camera/image_raw"/>
+  <node pkg="lia_avi_writer" type="lia_avi_writer.py" name="avi_writer" args="/camera/image_raw"/> 
 
   <!-- FPS monitor node -->
   <node pkg="lia_fps_monitor" type="fps_node.py" name="fps_monitor" args="/camera/camera_info"/>

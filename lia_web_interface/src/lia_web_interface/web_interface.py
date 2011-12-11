@@ -394,7 +394,6 @@ def start_stop_recording(obj_response):
     """
     Handles requests to start/stop recording video
     """
-
     recording_flag = db.get('recording_flag')
     trial_values = db_tools.get_dict(db,'trial_values')
     log_values = db_tools.get_dict(db,'log_values')
