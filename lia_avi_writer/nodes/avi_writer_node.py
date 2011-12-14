@@ -10,6 +10,7 @@ import threading
 import math
 import redis
 import lia_config
+from lia_web_interface import db_tools
 
 # Messages
 from sensor_msgs.msg import Image
@@ -135,7 +136,7 @@ class AVI_Writer(object):
                     del self.writer
                     self.writer = None
                     self.recording_message = 'finished'
-                    self.redis_db.set('recording_flag',0)
+                    db_tools.set_bool(self.redis_db,'recording_flag',False)
 
         # Publish progress message
         with self.lock:
@@ -151,5 +152,6 @@ if __name__ == '__main__':
     topic = sys.argv[1]
     node = AVI_Writer(topic)
     node.run()
+
 
 

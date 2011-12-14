@@ -53,7 +53,7 @@ def get_recording_button_text(recording_flag):
     """
     Returns the recording button text given the recording flag
     """
-    if recording_flag == 0:
+    if not recording_flag:
         recording_button_text = 'Start Recording'
     else:
         recording_button_text = 'Stop Recording'

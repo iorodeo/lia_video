@@ -205,7 +205,7 @@ class LIA_AVI_Writer(object):
         self.pulse_controller.set_pulse_low()
         self.pulse_controller.turn_off()
         self.recording_message = 'finished'
-        self.redis_db.set('recording_flag',0)
+        db_tools.set_bool(self.redis_db,'recording_flag',False)
         self.timing_fid.close()
 
 

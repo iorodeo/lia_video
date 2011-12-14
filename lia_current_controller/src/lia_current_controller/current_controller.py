@@ -15,19 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 from __future__ import division
-import sys
-import os
-import os.path
-import platform
 import time
-import serial
-
+from serial import Serial
 
 DEBUG = False 
-
 CHANNEL_COUNT = 4
-
-SERIAL_BAUDRATE = 115200
+#SERIAL_BAUDRATE = 115200
+SERIAL_BAUDRATE = 9600 
 
 SERIAL_COMMAND_GET_123 = 0
 SERIAL_COMMAND_SET_COMPUTERCONTROL_MODE = 1
@@ -40,71 +34,36 @@ SERIAL_COMMAND_SET_BNC_MODE = 6
 def remap(x,in_min,in_max,out_min,out_max):
     return (x - in_min)*(out_max - out_min)/(in_max - in_min) + out_min
 
-class CurrentController(object):
+class CurrentController(Serial):
 
-    def __init__(self,port=''):
+    def __init__(self,port):
+
+        super(CurrentController,self).__init__(port,SERIAL_BAUDRATE,timeout=1)
+        time.sleep(2.0) # sleep for Arduino serial reset
+
         self.current_min = 0
         self.current_max = 1000
         self.output_min = 0
-        self.output_max = 1023
-        # Set default com port
-        self.osType = platform.system()
-        self.port_list_linux = ['/dev/ttyUSB0','/dev/ttyUSB1','/dev/ttyUSB2','/dev/ttyUSB3']
-        self.port_list_windows = ['com1','com2','com3','com4']
-        self.port_index = 0
-        if port == '':
-            if self.osType == 'Linux':
-                self.port_list = self.port_list_linux
-                self.port = self.port_list[self.port_index]
-            else:
-                self.port_list = self.port_list_windows
-                self.port = self.port_list_windows[self.port_index]
-        else:
-            self.port = port
-            self.port_list = [port]
+        self.output_max = 1000
 
-        self.serial = serial.Serial(self.port,SERIAL_BAUDRATE,timeout=1)
-        self.serial.open()
-        time.sleep(2.0)
-        self.test_serial_port()
         self.set_computercontrol_mode()
         self.set_current_values([self.current_min,self.current_min,self.current_min,self.current_min])
-        time.sleep(0.25)
 
     def close(self):
         self.set_standalone_mode()
-        self.close_serial_port()
-
-    def close_serial_port(self):
-        self.serial.close()
-
-    def test_serial_port(self):
-        if DEBUG:
-            print "Testing port " + self.port
-        serial_list = [SERIAL_COMMAND_GET_123]
-        self.serial.write(str(serial_list))
-        read_line = self.serial.readline()
-        if (read_line == '') or (int(read_line) != 123):
-            self.port_index += 1
-            if self.port_index < len(self.port_list):
-                self.port = self.port_list[self.port_index]
-                self.test_serial_port()
-            else:
-                raise RuntimeError('Did not receive expected response on serial port, check port and connections.')
-        if DEBUG:
-            print "Test successful!"
+        super(CurrentController,self).close()
 
     def set_computercontrol_mode(self):
         if DEBUG:
             print "Setting computercontrol mode."
         serial_list = [SERIAL_COMMAND_SET_COMPUTERCONTROL_MODE]
-        self.serial.write(str(serial_list))
+        self.write(str(serial_list))
 
     def set_standalone_mode(self):
         if DEBUG:
             print "Setting standalone mode."
         serial_list = [SERIAL_COMMAND_SET_STANDALONE_MODE]
-        self.serial.write(str(serial_list))
+        self.write(str(serial_list))
 
     def condition_channel(self,channel):
         if type(channel) == str:
@@ -147,7 +106,7 @@ class CurrentController(object):
 
             value = self.remap_output(value)
             serial_list = [SERIAL_COMMAND_SET_CURRENT_VALUE,channel,value]
-            self.serial.write(str(serial_list))
+            self.write(str(serial_list))
         else:
             self.set_current_values([value]*CHANNEL_COUNT)
 
@@ -164,7 +123,7 @@ class CurrentController(object):
 
         value_list = self.remap_output(value_list)
         serial_list.extend(value_list)
-        self.serial.write(str(serial_list))
+        self.write(str(serial_list))
 
     def set_bnc_modes(self,bnc_mode_list=[False]*CHANNEL_COUNT):
         if (type(bnc_mode_list) != list) and (type(bnc_mode_list) != tuple):
@@ -181,7 +140,7 @@ class CurrentController(object):
         else:
             raise RuntimeError('bnc_mode_list argument must be a list or tuple with length equal to ' + str(CHANNEL_COUNT))
 
-        self.serial.write(str(serial_list))
+        self.write(str(serial_list))
 
     def set_bnc_mode(self,channel='a',bnc_mode=False):
         bnc_mode = bool(bnc_mode)
@@ -193,7 +152,7 @@ class CurrentController(object):
             bnc_mode = int(bnc_mode)
 
             serial_list = [SERIAL_COMMAND_SET_BNC_MODE,channel,bnc_mode]
-            self.serial.write(str(serial_list))
+            self.write(str(serial_list))
         else:
             self.set_bnc_modes([bnc_mode]*CHANNEL_COUNT)
 
@@ -207,19 +166,10 @@ class CurrentController(object):
 
 # -----------------------------------------------------------------------
 if __name__ == '__main__':
-    cc = CurrentController()
-    # cc.set_bnc_mode('b',True)
-    # cc.set_bnc_mode('all',True)
-    # cc.set_bnc_modes([False,False,False,False])
 
-    for i in range(3):
-        cc.set_current_values([100,0,500,100])
-        time.sleep(1)
-        cc.set_current_values([500,0,100,500])
-        time.sleep(1)
-        cc.turn_off_channel('c')
-        cc.set_current_value('a',50)
-        time.sleep(1)
-    cc.set_current_values([0,0,0,0])
-    # cc.set_bnc_modes()
+    cc = CurrentController('/dev/ttyUSB0')
+    cc.set_current_value('a',200)
+    raw_input('press enter to continue')
     cc.close()
+
+

@@ -78,8 +78,14 @@ def delete_data_files(avi_files, log_values):
                     timing_suffix,
                     )
             settings_filename, timing_filename = metadata_filenames
-            os.remove(settings_filename)
-            os.remove(timing_filename)
+            try:
+                os.remove(settings_filename)
+            except OSError:
+                pass
+            try:
+                os.remove(timing_filename)
+            except OSError:
+                pass
 
 def get_metadata_filenames(movie_filename,data_directory,settings_suffix,timing_suffix): 
     """

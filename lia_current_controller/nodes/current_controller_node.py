@@ -14,7 +14,7 @@ class CurrentController(object):
     ROS node which provides a simple interface to IO Rodeo's LED
     current controller.
     """
-    def __init__(self,port='/dev/ttyUSB0'):
+    def __init__(self,port='/dev/ledcontrol'):
 
         self.lock = threading.Lock()
         self.channel_list = ['a','b','c','d']
@@ -22,7 +22,7 @@ class CurrentController(object):
         self.min_value = 0
         self.max_value = 1000
 
-        self.dev = lia_current_controller.CurrentController()
+        self.dev = lia_current_controller.CurrentController(port)
 
         rospy.init_node('current_controller')
         rospy.on_shutdown(self.on_shutdown)

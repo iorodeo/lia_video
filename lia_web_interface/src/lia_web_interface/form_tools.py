@@ -125,27 +125,59 @@ def get_base_kwargs():
     Basic set of keyword consants for use in calls to render_template
     Counld move these to the database .... 
     """
-    # Get hostaddr use ip address if possible
-    try:
-        hostaddr= iface_tools.get_ip_addr('eth0')
-    except KeyError, NameError:
-        print 'unable to get ip - using localhost'
-        hostaddr = 'localhost'
+    if not config.yale_temp_debug:
+	
+        # Get hostaddr use ip address if possible
+        try:
+            hostaddr= iface_tools.get_ip_addr('eth0')
+        except KeyError, NameError:
+            print 'unable to get ip - using localhost'
+            hostaddr = 'localhost'
 
-    base_kwargs = {
-            'page_header': config.page_header,
-            'tab_dict': config.tab_dict,
-            'tab_order': config.tab_order,
-            'camera_topic': config.camera_topic,
-            'progress_bar_topic': config.progress_bar_topic,
-            'progress_message_topic': config.progress_message_topic,
-            'fps_topic': config.fps_topic,
-            'capture_tab_image': config.capture_tab_image,
-            'fullsize_tab_image': config.fullsize_tab_image,
-            'camera_mjpeg_port': config.camera_mjpeg_port,
-            'progress_mjpeg_port': config.progress_mjpeg_port,
-            'fps_mjpeg_port': config.fps_mjpeg_port,
-            'hostaddr': hostaddr,
-            }
+        base_kwargs = {
+                'page_header': config.page_header,
+                'tab_dict': config.tab_dict,
+                'tab_order': config.tab_order,
+                'camera_topic': config.camera_topic,
+                'progress_bar_topic': config.progress_bar_topic,
+                'progress_message_topic': config.progress_message_topic,
+                'fps_topic': config.fps_topic,
+                'capture_tab_image': config.capture_tab_image,
+                'fullsize_tab_image': config.fullsize_tab_image,
+                'camera_mjpeg_port': config.camera_mjpeg_port,
+                'progress_mjpeg_port': config.progress_mjpeg_port,
+                'fps_mjpeg_port': config.fps_mjpeg_port,
+                'hostaddr': hostaddr,
+                'mjpeg_quality': config.mjpeg_quality,
+                }
+
+    else:
+        
+        # Temporary -------------------------------------------
+
+        hostaddr = '130.132.215.125'
+ 
+        camera_mjpeg_port = str(int(config.camera_mjpeg_port) + 10000)
+        progress_mjpeg_port = str(int(config.progress_mjpeg_port) + 10000)
+        fps_mjpeg_port = str(int(config.fps_mjpeg_port) + 10000)
+
+        base_kwargs = {
+                'page_header': config.page_header,
+                'tab_dict': config.tab_dict,
+                'tab_order': config.tab_order,
+                'camera_topic': config.camera_topic,
+                'progress_bar_topic': config.progress_bar_topic,
+                'progress_message_topic': config.progress_message_topic,
+                'fps_topic': config.fps_topic,
+                'capture_tab_image': config.capture_tab_image,
+                'fullsize_tab_image': config.fullsize_tab_image,
+                'camera_mjpeg_port': camera_mjpeg_port,
+                'progress_mjpeg_port': progress_mjpeg_port,
+                'fps_mjpeg_port': fps_mjpeg_port,
+                'hostaddr': hostaddr,
+                'mjpeg_quality': config.mjpeg_quality,
+                }
+ 
+        # ---------------------------------------------------------
+
     return base_kwargs
-

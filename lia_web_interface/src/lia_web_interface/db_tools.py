@@ -10,7 +10,9 @@ def init_db(db):
     log_values_default = config_tools.get_defaults(config.log_values_info)
     set_dict(db,'trial_values',trial_values_default)
     set_dict(db,'log_values', log_values_default)
-    db.set('recording_flag', 0)
+    if not db.exists('saved_trials'): 
+        set_dict(db,'saved_trials', {})
+    set_bool(db,'recording_flag',False)
 
 def set_dict(db,key,user_dict):
     """
@@ -28,3 +30,23 @@ def get_dict(db,key):
     dict_str = str(db.get(key))
     user_dict = pickle.loads(dict_str)
     return user_dict
+
+def set_bool(db,key,value):
+    """
+    Sets boolean value in redis database.
+    """
+    if value: 
+        value_str = str(True)
+    else: 
+        value_str = str(False)
+    db.set(key,value_str)
+
+def get_bool(db,key):
+    """
+    Get boolean values from redis database
+    """
+    value_str = str(db.get(key))
+    if value_str == 'True':
+        return True
+    else:
+        return False

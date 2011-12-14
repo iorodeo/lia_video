@@ -7,6 +7,7 @@ from lia_config import *
 import os
 
 page_header = 'LIA - Video Acquisition System'
+server_port = 5000
 
 tab_dict = {
         'capture': {
@@ -76,7 +77,7 @@ trial_values_info = [
             'type'      : 'number',
             },
         {
-            'name'      : 'Pulse Current',
+            'name'      : 'Pulse Current (Ch A)',
             'tag'       : 'pulse_current',
             'value'     : 100,
             'units'     : 'mA',
@@ -143,10 +144,15 @@ capture_tab_image = {
 # Fullsize tab scale options
 fullsize_scale_options = [str(0.1*x) for x in range(10,0,-1)]
 
+# Image quality option
+mjpeg_quality = 80 
+
 # For development only
 username = 'admin'
 password = 't3st'
 
+# Temporary debug flag 
+yale_temp_debug = False 
 
 
 

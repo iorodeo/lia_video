@@ -101,7 +101,7 @@ def capture():
         return flask.g.sijax.process_request()
 
     else:
-        recording_flag = db.get('recording_flag')
+        recording_flag = db_tools.get_bool(db,'recording_flag')
         trial_values = db_tools.get_dict(db,'trial_values')
         log_values = db_tools.get_dict(db,'log_values')
         recording_button_text = display_tools.get_recording_button_text(recording_flag)
@@ -150,7 +150,7 @@ def trial_settings():
     """
     Handles request for the trial settings tab.
     """
-    recording_flag = db.get('recording_flag')
+    recording_flag = db_tools.get_bool(db,'recording_flag')
     kwargs = dict(form_tools.get_base_kwargs())
     kwargs['current_tab'] = config.tab_dict['trial_settings']['tab']
 
@@ -255,7 +255,7 @@ def trial_settings():
     saved_trials_display = display_tools.get_colored_list(saved_trials_display,color_vals=('c2','c1'))
     kwargs['saved_trials_display'] = saved_trials_display
     
-    if recording_flag == 0:
+    if not recording_flag:
         kwargs['disabled'] = ''
     else:
         kwargs['disabled'] = 'disabled'
@@ -267,7 +267,7 @@ def logging():
     """
     Handlers requests for the logging tab
     """
-    recording_flag = db.get('recording_flag')
+    recording_flag = db_tools.get_bool(db,'recording_flag')
     kwargs = dict(form_tools.get_base_kwargs())
     kwargs['current_tab'] = config.tab_dict['logging']['tab']
     log_values = db_tools.get_dict(db,'log_values')
@@ -296,7 +296,8 @@ def logging():
     avi_display = display_tools.get_colored_list(existing_avi,color_vals=('c2','c1'))
 
     kwargs['avi_display'] = avi_display 
-    if recording_flag == 0:
+    
+    if not recording_flag:
         kwargs['disabled'] = ''
     else:
         kwargs['disabled'] = 'disabled'
@@ -369,7 +370,7 @@ def update_recording_button(obj_response):
     Handles update request for the recording button text - keeps different clients in 
     sync.
     """
-    recording_flag = db.get('recording_flag')
+    recording_flag = db_tools.get_bool(db,'recording_flag')
     trial_values = db_tools.get_dict(db,'trial_values')
     log_values = db_tools.get_dict(db,'log_values')
 
@@ -394,7 +395,7 @@ def start_stop_recording(obj_response):
     """
     Handles requests to start/stop recording video
     """
-    recording_flag = db.get('recording_flag')
+    recording_flag = db_tools.get_bool(db,'recording_flag')
     trial_values = db_tools.get_dict(db,'trial_values')
     log_values = db_tools.get_dict(db,'log_values')
 
@@ -403,7 +404,7 @@ def start_stop_recording(obj_response):
     if log_values['append_datetime'] == 'yes': 
         movie_file = file_tools.add_datetime_suffix(movie_file)
 
-    if recording_flag == 0:  # Start recording
+    if not recording_flag:  # Start recording
 
         # Check to see if file exists and if overwrite=no abort recording
         is_existing_avi = file_tools.is_existing_avi(log_values['data_directory'],movie_file)
@@ -412,12 +413,12 @@ def start_stop_recording(obj_response):
             return
 
         else:
-            recording_flag = 1
+            recording_flag = True 
             recording_cmd = 'start'
 
     else: # Stop recording
 
-        recording_flag = 0
+        recording_flag = False 
         recording_cmd = 'stop'
 
     # Use Ros service to send command to avi writer 
@@ -435,9 +436,9 @@ def start_stop_recording(obj_response):
         proxy_error_message = ''
     except rospy.ServiceException, e:
         proxy_error_message = str(e)
-        recording_flag = 0
+        recording_flag = False 
 
-    db.set('recording_flag',recording_flag)
+    db_tools.set_bool(db,'recording_flag',recording_flag)
     recording_button_text = display_tools.get_recording_button_text(recording_flag)
     obj_response.html('#recording_button',recording_button_text)
     obj_response.html('#avi_exists_message','')
@@ -458,11 +459,13 @@ if __name__ == '__main__':
         app.run()
     elif server == 'builtin':
         print ' * using builtin server'
-        app.run(host='0.0.0.0')
+        print ' * port', config.server_port
+        app.run(host='0.0.0.0',port=config.server_port)
     elif server == 'tornado':
         print ' * using tornado server'
+        print ' * port', config.server_port
         http_server = HTTPServer(WSGIContainer(app))
-        http_server.listen(5000)
+        http_server.listen(config.server_port)
         IOLoop.instance().start()
     else: 
         raise ValueError, 'uknown server option %s'%(server,)

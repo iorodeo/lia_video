@@ -21,18 +21,18 @@
 
 <div class="imagebox">
     <div>
-        <img src="http://{{hostaddr}}:{{fps_mjpeg_port}}/stream?topic={{fps_topic}}"/>
+        <img src="http://{{hostaddr}}:{{fps_mjpeg_port}}/stream?topic={{fps_topic}}?quality={{mjpeg_quality}}"/>
     </div>
     <div>
-        <img src="http://{{hostaddr}}:{{camera_mjpeg_port}}/stream?topic={{camera_topic}}?width={{capture_tab_image['width']}}?height={{capture_tab_image['height']}}" />
-    </div>
-
-    <div>
-        <img src="http://{{hostaddr}}:{{progress_mjpeg_port}}/stream?topic={{progress_bar_topic}}" />
+        <img src="http://{{hostaddr}}:{{camera_mjpeg_port}}/stream?topic={{camera_topic}}?width={{capture_tab_image['width']}}?height={{capture_tab_image['height']}}?quality={{mjpeg_quality}}"/> 
     </div>
 
     <div>
-        <img src="http://{{hostaddr}}:{{progress_mjpeg_port}}/stream?topic={{progress_message_topic}}" />
+        <img src="http://{{hostaddr}}:{{progress_mjpeg_port}}/stream?topic={{progress_bar_topic}}?quality={{mjpeg_quality}}" />
+    </div>
+
+    <div>
+        <img src="http://{{hostaddr}}:{{progress_mjpeg_port}}/stream?topic={{progress_message_topic}}?qualtiy={{mjpeg_quality}}" />
     </div>
 </div>
 
