@@ -33,6 +33,7 @@ import rospy
 
 # ROS Services
 from lia_services.srv import RecordingCmd
+from lia_services.srv import SetCurrentCmd
 
 # Set up application and database
 app = flask.Flask(__name__)
@@ -98,6 +99,7 @@ def capture():
         # This is a sijax request - let sijax handle it
         flask.g.sijax.register_callback('update_recording_button', update_recording_button)
         flask.g.sijax.register_callback('start_stop_recording', start_stop_recording)
+        flask.g.sijax.register_callback('update_ir_light', update_ir_light)
         return flask.g.sijax.process_request()
 
     else:
@@ -445,6 +447,23 @@ def start_stop_recording(obj_response):
     obj_response.html('#proxy_error_message', proxy_error_message)
     return
 
+def update_ir_light(obj_response,value):
+    """
+    Update the IR light on the current controller.
+    """
+    value = int(value)
+    set_ir_light_current(value)
+    return
+
+def set_ir_light_current(value):
+    """
+    Sets the current value for the IR light
+    """
+    try:
+        set_curr_proxy = rospy.ServiceProxy('set_current', SetCurrentCmd) 
+        response =set_curr_proxy(config.ir_light_channel,'on', value)
+    except rospy.ServiceException, e:
+        pass
 # -----------------------------------------------------------------------------
 if __name__ == '__main__': 
 
@@ -452,6 +471,9 @@ if __name__ == '__main__':
         server = sys.argv[1]
     except IndexError:
         server = 'tornado'
+
+    # Initialize ir lighting
+    set_ir_light_current(0)
 
     if server == 'debug':
         print ' * using debug server'

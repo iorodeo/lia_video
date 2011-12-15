@@ -1,6 +1,7 @@
 """
 A collection of service functions usefull for createing the web display.
 """
+import math
 import config
 
 def get_log_display(log_values, show_file_suffix=False, color_values=('c2','c1')):
@@ -41,7 +42,13 @@ def get_trial_display(trial_values,color_values=('c2','c1')):
 
 
 def time_display(values):
-    return '%02d:%02d:%02d'%values
+    hr, mn, sc = values
+    sc_int = math.floor(sc)
+    sc_rem = int((math.floor(10*(sc - sc_int))))
+    if sc_rem != 0:
+        return '%02d:%02d:%02d.%d'%(hr,mn,sc_int,sc_rem,)
+    else:
+        return '%02d:%02d:%02d'%(hr,mn,sc_int,)
 
 def number_display(value):
     return '%d'%(value,)

@@ -16,7 +16,11 @@
                                     id="{{item['tag']}}_{{label}}" 
                                     name="{{item['tag']}}_{{label}}" 
                                     type="text" 
-                                    onKeyPress="return numbersonly(this,event)" 
+                                    {% if i==2 %}
+                                        onKeyPress="return numbersonly(this,event,true)" 
+                                    {% else %}
+                                        onKeyPress="return numbersonly(this,event)" 
+                                    {% endif %}
                                     size="3" 
                                     value={{item['value_num'][i]}} 
                                 />  

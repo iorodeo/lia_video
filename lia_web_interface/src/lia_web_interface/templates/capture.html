@@ -14,6 +14,15 @@
         setTimeout(arguments.callee,500);
     }, 500);
 </script>
+
+<script> 
+    function handleChange(input) { 
+        if (input.value < 0) input.value = 0; 
+        if (input.value > 1000) input.value = 1000; 
+        Sijax.request('update_ir_light',[input.value]);
+    } 
+</script>
+
 {% endblock %}
 
 {% block body%}
@@ -51,6 +60,9 @@
     <br>
 
     <div style="text-align:left;"> 
+        IR Light (Ch B) <input name="ir_light_input" id="ir_light_input" size="3" value="0" onKeyPress="return numbersonly(this,event)" onChange="handleChange(this)"\>
+        mA
+        <br> <br> <br>
         <button  name="recording_button" id="recording_button" onclick="Sijax.request('start_stop_recording');">{{recording_button_text}} </button>
         &nbsp;
         <span class="warning" id="avi_exists_message">  </span>

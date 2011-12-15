@@ -8,6 +8,7 @@ import os
 
 page_header = 'LIA - Video Acquisition System'
 server_port = 5000
+ir_light_channel = 'b'
 
 tab_dict = {
         'capture': {
@@ -44,28 +45,28 @@ trial_values_info = [
         {
             'name'      : 'Recording Duration', 
             'tag'       : 'recording_duration', 
-            'value'     : (0,10,0), 
+            'value'     : (0,10,0.0), 
             'units'     : time_units,
             'type'      : 'time',
             },
         {   
             'name'      : 'Pulse Start Time',
             'tag'       : 'pulse_start_time',
-            'value'     : (0,3,0), 
+            'value'     : (0,3,0.0), 
             'units'     : time_units,
             'type'      : 'time',
             },
         {
             'name'      : 'Pulse High Time',
             'tag'       : 'pulse_high_time',
-            'value'     : (0,1,0), 
+            'value'     : (0,1,0.0), 
             'units'     : time_units,
             'type'      : 'time',
             },
         {
             'name'      : 'Pulse Period',
             'tag'       : 'pulse_period',
-            'value'     : (0,0,30), 
+            'value'     : (0,0,30.0), 
             'units'     : time_units,
             'type'      : 'time',
             },
@@ -146,6 +147,7 @@ fullsize_scale_options = [str(0.1*x) for x in range(10,0,-1)]
 
 # Image quality option
 mjpeg_quality = 80 
+
 
 # For development only
 username = 'admin'

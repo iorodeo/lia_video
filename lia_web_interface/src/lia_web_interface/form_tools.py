@@ -40,7 +40,7 @@ def get_time_values(name,form):
     except ValueError:
         t_min = 0
     try:
-        t_sec = int(form['%s_sec'%(name,)])
+        t_sec = float(form['%s_sec'%(name,)])
     except ValueError:
         t_sec = 0
     return  normalize_min_sec(t_hr, t_min, t_sec)
@@ -75,10 +75,11 @@ def normalize_min_sec(t_hr, t_min,t_sec):
     """
     t = 3600.0*t_hr + 60.0*t_min + t_sec
     t_hr_norm = int(math.floor(t/3600.0))
-    t_rem = int(t - 3600*t_hr_norm)
+    t_rem = float(t - 3600*t_hr_norm)
 
     t_min_norm = int(math.floor(t_rem/60.0))
-    t_sec_norm = int(t_rem - 60*t_min_norm)
+    t_sec_norm = float(t_rem - 60*t_min_norm)
+    t_sec_norm = 0.1*(math.floor(10*t_sec_norm))
     return t_hr_norm, t_min_norm, t_sec_norm
 
 def get_selected_avi_files(form):
