@@ -60,7 +60,7 @@
     <br>
 
     <div style="text-align:left;"> 
-        IR Light (Ch B) <input name="ir_light_input" id="ir_light_input" size="3" value="0" onKeyPress="return numbersonly(this,event)" onChange="handleChange(this)"\>
+        IR Light (Ch B) <input name="ir_light_input" id="ir_light_input" size="3" value="{{ir_light_value}}" onKeyPress="return numbersonly(this,event)" onChange="handleChange(this)"\>
         mA
         <br> <br> <br>
         <button  name="recording_button" id="recording_button" onclick="Sijax.request('start_stop_recording');">{{recording_button_text}} </button>

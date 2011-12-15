@@ -13,6 +13,7 @@ def init_db(db):
     if not db.exists('saved_trials'): 
         set_dict(db,'saved_trials', {})
     set_bool(db,'recording_flag',False)
+    set_int(db,'ir_light_value',config.dflt_ir_light_value)
 
 def set_dict(db,key,user_dict):
     """
@@ -50,3 +51,17 @@ def get_bool(db,key):
         return True
     else:
         return False
+
+def set_int(db,key,value):
+    """
+    Set integer value from redis database
+    """
+    value_str = str(value)
+    db.set(key,value_str)
+
+def get_int(db,key):
+    """
+    Get integer value from redis database
+    """
+    value_str = str(db.get(key))
+    return int(value_str)

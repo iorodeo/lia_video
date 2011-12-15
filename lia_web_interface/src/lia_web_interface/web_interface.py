@@ -107,6 +107,7 @@ def capture():
         trial_values = db_tools.get_dict(db,'trial_values')
         log_values = db_tools.get_dict(db,'log_values')
         recording_button_text = display_tools.get_recording_button_text(recording_flag)
+        ir_light_value = db_tools.get_int(db,'ir_light_value')
 
         # Create the kwargs to pass to the render template function
         kwargs = dict(form_tools.get_base_kwargs())
@@ -114,6 +115,7 @@ def capture():
         kwargs['log_display'] = display_tools.get_log_display(log_values)
         kwargs['trial_display'] = display_tools.get_trial_display(trial_values)
         kwargs['recording_button_text'] = recording_button_text
+        kwargs['ir_light_value'] = ir_light_value
 
         return flask.render_template('capture.html',**kwargs)
 
@@ -452,18 +454,20 @@ def update_ir_light(obj_response,value):
     Update the IR light on the current controller.
     """
     value = int(value)
-    set_ir_light_current(value)
-    return
+    try:
+        set_ir_light_current(value)
+    except rospy.ServiceException, e:
+        obj_response.html('#proxy_error_message',str(e))
 
 def set_ir_light_current(value):
     """
     Sets the current value for the IR light
     """
-    try:
-        set_curr_proxy = rospy.ServiceProxy('set_current', SetCurrentCmd) 
-        response =set_curr_proxy(config.ir_light_channel,'on', value)
-    except rospy.ServiceException, e:
-        pass
+    rospy.wait_for_service('set_current')
+    set_curr_proxy = rospy.ServiceProxy('set_current', SetCurrentCmd) 
+    response =set_curr_proxy(config.ir_light_channel,'on', value)
+    db_tools.set_int(db,'ir_light_value', value)
+    
 # -----------------------------------------------------------------------------
 if __name__ == '__main__': 
 

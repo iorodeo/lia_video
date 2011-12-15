@@ -9,6 +9,7 @@ import os
 page_header = 'LIA - Video Acquisition System'
 server_port = 5000
 ir_light_channel = 'b'
+dflt_ir_light_value = 0
 
 tab_dict = {
         'capture': {
