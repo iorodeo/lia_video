@@ -46,7 +46,8 @@ class LIA_AVI_Writer(object):
         self.filename = os.path.join(os.environ['HOME'],'default.avi')
 
         # Current pulse parameters 
-        self.pulse_channel = 'a'
+        #self.pulse_channel = 'a'
+        self.pulse_channel = 'c' # Should probalby move this to a configuration file
         self.pulse_controller = None
         self.timing_fid = None
 

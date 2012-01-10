@@ -465,7 +465,11 @@ def set_ir_light_current(value):
     """
     rospy.wait_for_service('set_current')
     set_curr_proxy = rospy.ServiceProxy('set_current', SetCurrentCmd) 
-    response =set_curr_proxy(config.ir_light_channel,'on', value)
+    if value != 0:
+        response = set_curr_proxy(config.ir_light_channel,'on', value)
+    else:
+        response = set_curr_proxy(config.ir_light_channel,'off', value)
+
     db_tools.set_int(db,'ir_light_value', value)
     
 # -----------------------------------------------------------------------------

@@ -79,7 +79,7 @@ trial_values_info = [
             'type'      : 'number',
             },
         {
-            'name'      : 'Pulse Current (Ch A)',
+            'name'      : 'Pulse Current (Ch C)',
             'tag'       : 'pulse_current',
             'value'     : 100,
             'units'     : 'mA',
