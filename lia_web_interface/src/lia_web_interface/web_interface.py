@@ -369,7 +369,7 @@ atexit.register(cleanup)
 
 # Sijax request handlers 
 # ----------------------------------------------------------------------------------
-def update_recording_button(obj_response):
+def update_recording_button(obj_response, ir_light_value_new):
     """
     Handles update request for the recording button text - keeps different clients in 
     sync.
@@ -377,10 +377,14 @@ def update_recording_button(obj_response):
     recording_flag = db_tools.get_bool(db,'recording_flag')
     trial_values = db_tools.get_dict(db,'trial_values')
     log_values = db_tools.get_dict(db,'log_values')
+    ir_light_value = db_tools.get_int(db,'ir_light_value')
 
     # Update recording button
     recording_button_text = display_tools.get_recording_button_text(recording_flag)
     obj_response.html("#recording_button",recording_button_text)
+
+    # Update ir light value
+    obj_response.html('#ir_light_value', ir_light_value)
 
     # Update trial and log values
     trial_display = display_tools.get_trial_display(trial_values)
