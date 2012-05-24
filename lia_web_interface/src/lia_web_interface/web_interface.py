@@ -10,7 +10,12 @@ from tornado.ioloop import IOLoop
 
 # Flask web framework imports
 import flask
-import flaskext.sijax
+try:
+    import flask_sijax
+    sijax_api_new = True
+except ImportError:
+    import flaskext.sijax as flask_sijax
+    sijax_api_new = False 
 
 import re
 import sys
@@ -52,7 +57,10 @@ app.config["SIJAX_JSON_URI"] = os.path.join('.',os.path.dirname(__file__), 'stat
 app.config['SECRET_KEY'] = 'development key' 
 
 # Setup sijax
-flaskext.sijax.init_sijax(app)
+if sijax_api_new:
+    flask_sijax.Sijax(app)
+else:
+    flask_sijax.init_sijax(app)
 
 # Routes
 # --------------------------------------------------------------------------------
@@ -86,7 +94,7 @@ def logout():
     flask.flash('You were logged out')
     return flask.redirect(flask.url_for('index'))
 
-@flaskext.sijax.route(app, '/capture', methods=['GET','POST'])
+@flask_sijax.route(app, '/capture', methods=['GET','POST'])
 @user_tools.check_login
 def capture():
     """
