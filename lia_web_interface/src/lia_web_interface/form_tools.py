@@ -131,9 +131,10 @@ def get_base_kwargs():
         # Get hostaddr use ip address if possible
         try:
             hostaddr= iface_tools.get_ip_addr('eth0')
-        except KeyError, NameError:
-            print 'unable to get ip - using localhost'
-            hostaddr = 'localhost'
+        except (KeyError, NameError, ValueError) as e:
+            print 'unable to get ip - using lo'
+            hostaddr= iface_tools.get_ip_addr('lo')
+
 
         base_kwargs = {
                 'page_header': config.page_header,
